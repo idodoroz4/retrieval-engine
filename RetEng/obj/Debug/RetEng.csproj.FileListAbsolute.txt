@@ -1,1 +1,2 @@
 c:\users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\bin\Debug\RetEng.exe.config
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\bin\Debug\RetEng.exe.config
