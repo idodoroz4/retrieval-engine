@@ -24,6 +24,11 @@ namespace RetEng
         {
             InitializeComponent();
             ReadFile.get_docs(@"D:\corpus");
+
+            string input;
+            string pattern = @"\d+";
+
+
             
         }
     }
