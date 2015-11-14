@@ -1,2 +1,15 @@
 c:\users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\bin\Debug\RetEng.exe.config
 C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\bin\Debug\RetEng.exe.config
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\bin\Debug\RetEng.exe
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\bin\Debug\RetEng.pdb
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.csprojResolveAssemblyReference.cache
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\MainWindow.g.cs
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\App.g.cs
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng_MarkupCompile.cache
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng_MarkupCompile.lref
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\MainWindow.baml
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.g.resources
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.Properties.Resources.resources
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.csproj.GenerateResource.Cache
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.exe
+C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.pdb

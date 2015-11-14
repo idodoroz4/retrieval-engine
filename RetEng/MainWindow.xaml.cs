@@ -23,6 +23,8 @@ namespace RetEng
         public MainWindow()
         {
             InitializeComponent();
+            ReadFile.get_docs(@"D:\corpus");
+            
         }
     }
 }
