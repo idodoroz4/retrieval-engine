@@ -8,8 +8,12 @@ namespace RetEng
 {
     class Parser
     {
-        public  parse_doc (Document doc)
+        public static void parse_doc (Document doc) 
         {
+            Dictionary<string, Term> dic = new Dictionary<string, Term>();
+            
+            string text = doc.text;
+
 
         }
     }

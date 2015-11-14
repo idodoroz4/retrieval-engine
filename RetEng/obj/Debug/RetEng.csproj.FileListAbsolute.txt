@@ -13,3 +13,16 @@ C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\Re
 C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.csproj.GenerateResource.Cache
 C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.exe
 C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.pdb
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng.csprojResolveAssemblyReference.cache
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\MainWindow.g.cs
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\App.g.cs
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng_MarkupCompile.cache
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng_MarkupCompile.lref
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng.exe
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng.pdb
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\bin\Debug\RetEng.exe
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\bin\Debug\RetEng.pdb
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\MainWindow.baml
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng.g.resources
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng.Properties.Resources.resources
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng.csproj.GenerateResource.Cache

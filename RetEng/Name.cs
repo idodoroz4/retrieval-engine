@@ -13,8 +13,9 @@ namespace RetEng
         public Name(string name)
         {
             _name = name;
+            _counts = 1;
         }
-        public string get_value()
+        public override string get_value()
         {
             return _name;
         }

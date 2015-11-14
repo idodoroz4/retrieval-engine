@@ -8,7 +8,7 @@ namespace RetEng
 {
     public abstract class Term
     {
-
+        public int _counts { get; set; }
         public abstract string get_value();
     }
     

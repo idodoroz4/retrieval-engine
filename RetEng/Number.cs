@@ -18,9 +18,10 @@ namespace RetEng
             _is_precent = is_precent;
             _is_price = is_price;
             _value = value;
-            _size = 
+            _size = size;
+            _counts = 1;
         }
-        public string get_value()
+        public override string get_value()
         {
             return _value.ToString();
         }
