@@ -65,6 +65,7 @@
     <Compile Include="Range.cs" />
     <Compile Include="ReadFile.cs" />
     <Compile Include="Stemmer.cs" />
+    <Compile Include="Stopwords.cs" />
     <Compile Include="Term.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -105,6 +106,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\stop_words.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

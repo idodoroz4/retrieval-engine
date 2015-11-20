@@ -23,10 +23,14 @@ namespace RetEng
         public MainWindow()
         {
             InitializeComponent();
-            ReadFile.get_docs(@"D:\corpus");
+            // ReadFile.get_docs(@"D:\corpus");
 
             string input;
             string pattern = @"\d+";
+
+            Stopwords x = Stopwords.Instance;
+            Console.WriteLine("asd");
+
 
 
             
