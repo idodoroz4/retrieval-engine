@@ -21,7 +21,7 @@ namespace RetEng
     }
         public override string get_value()
         {
-            return _day.ToString() + _month.ToString() + _year.ToString();
+            return _day.ToString() +"-"+ _month.ToString() + "-" + _year.ToString();
         }
     }
    

@@ -25,11 +25,13 @@ namespace RetEng
                     int doc_idx_start = text.IndexOf("<DOC>", 0);
                     int doc_idx_end = text.IndexOf("</DOC>");
                     string single_doc = text.Substring(doc_idx_start + 6, doc_idx_end - (doc_idx_start + 6));
-                    single_batch.AddDoc(new Document(single_doc));
+                    Document doc = new Document(single_doc);
+                    /* for testing only */
+                    Parser.parse_doc(doc);
+                    /* end of testing */
+                    single_batch.AddDoc(doc);
                     text = text.Substring(doc_idx_end + 6, text.Length - (doc_idx_end + 6));
                 }
-                int x = 1;
-                //parse(single_batch);
                
             }
             

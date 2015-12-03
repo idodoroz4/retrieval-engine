@@ -42,6 +42,10 @@ namespace RetEng
             return "id: " + id + " \r\nDate: " + date.ToString() +
                 "\r\nTitle: " + title + "\r\nText: " + text; 
         }
+        public void empty_text()
+        {
+            this.text = "";
+        }
 
     }
 }
