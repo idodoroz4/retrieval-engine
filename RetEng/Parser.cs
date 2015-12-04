@@ -21,16 +21,38 @@ namespace RetEng
             termDic = new Dictionary<string, Term>();
             doc_text = doc.text;
             string original = doc.text;
-            dates_parse();
+
+            Stopwords stopword = Stopwords.Instance;
+
+            dates_parse(doc_text);
             names_parse();
             numbers_parse();
 
+            remove_stopwords();
+  
 
             Console.WriteLine("finish!");
 
         }
 
-        private static short month_str_to_short(string month)
+        private static void remove_stopwords()
+        {
+            Regex rgx_words = new Regex(@"[a-z']+", RegexOptions.IgnoreCase);
+            MatchCollection matches = rgx_words.Matches(doc_text);
+            
+            foreach (Match m in matches)
+            {
+               if (Stopwords.is_stopword(m.Value))
+                {
+                    string before_match = doc_text.Substring(0, m.Index);
+                    string after_match = doc_text.Substring(m.Index + m.Length);
+                    doc_text = before_match + create_nulls(m.Length) + after_match;
+                }
+            }
+            
+        }
+
+        private static short month_str_to_short(string month) // convert month name to short variable
         {
             if ((String.Compare(month, "January", StringComparison.OrdinalIgnoreCase) == 0) ||
                 (String.Compare(month, "jan", StringComparison.OrdinalIgnoreCase) == 0))
@@ -83,7 +105,10 @@ namespace RetEng
 
         }
 
-        private static bool is_matched(string pattern,string input) // checks the pattern of the string, return true if it is the pattern and else otherwise
+        private static bool is_matched(string pattern,string input) 
+            // checks the pattern of the string, return true if it is the pattern and else otherwise
+            // the function is is needed to deremine how the data is presented,so we can know how to store it in the Term object
+            // for example: date- "31 May 1978" or "May 31, 1978"
         {
             Regex rgx = new Regex(pattern, RegexOptions.IgnoreCase);
             return rgx.IsMatch(input);   
@@ -215,6 +240,7 @@ namespace RetEng
             foreach (Match m in num_matches)
             {
                 Number num = new Number(false, false, complex_number_format_to_double(m.Value), m.Length.ToString());
+                //add the term to the dictionary
             }
 
         }
@@ -236,8 +262,7 @@ namespace RetEng
             }
         }
 
-        public static void dates_parse() // parse the dates on the text
-            // checked 
+        public static void dates_parse(string text) // parse the dates on the text
         {
 
             //dates
@@ -259,7 +284,7 @@ namespace RetEng
                             "|" + date_format_6 + "|" + date_format_8 + "|" + date_format_5;
 
             Regex rgx_dates = new Regex(all_dates, RegexOptions.IgnoreCase);
-            MatchCollection dates_matches = rgx_dates.Matches(doc_text);
+            MatchCollection dates_matches = rgx_dates.Matches(text);
             mark_as_read(dates_matches);
             
             // creating for each match a Term and put it to the dictionary

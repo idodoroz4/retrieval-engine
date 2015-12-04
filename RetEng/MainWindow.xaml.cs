@@ -26,10 +26,11 @@ namespace RetEng
             InitializeComponent();
             ReadFile.get_docs(@"D:\corpus");
             
-           
-            
 
-            
+
+
+
+
         }
 
         private void reg (string pattern)

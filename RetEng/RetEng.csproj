@@ -67,6 +67,7 @@
     <Compile Include="Stemmer.cs" />
     <Compile Include="Stopwords.cs" />
     <Compile Include="Term.cs" />
+    <Compile Include="TermInDoc.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
