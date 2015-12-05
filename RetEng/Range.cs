@@ -21,6 +21,11 @@ namespace RetEng
             return _first_num.ToString() + " - " + _last_num.ToString();
         }
 
+        public override string ToString()
+        {
+            return _first_num.ToString() + " - " + _last_num.ToString();
+        }
+
     }
   
 

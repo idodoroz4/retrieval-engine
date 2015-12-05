@@ -10,17 +10,29 @@ namespace RetEng
 {
     class Parser
     {
-        static Dictionary<string, Term> termDic;
+        Dictionary<string, TermInDoc> termDic;
         
         static string doc_text;
         static string doc_title;
         static string doc_date;
+        static string doc_id;
+        static string batch_id;
+        static int doc_offset;
+        Stemmer stem;
+        
 
-        public static void parse_doc (Document doc) 
+        public void parse_doc (Document doc) 
         {
-            termDic = new Dictionary<string, Term>();
+            termDic = new Dictionary<string, TermInDoc>();
             doc_text = doc.text;
+            doc_title = doc.title;
+            doc_date = doc.date;
+            doc_id = doc.id;
             string original = doc.text;
+            batch_id = doc.batch_id;
+            doc_offset = doc.doc_idx;
+            stem = new Stemmer();
+            
 
             Stopwords stopword = Stopwords.Instance;
 
@@ -28,14 +40,18 @@ namespace RetEng
             names_parse();
             numbers_parse();
 
-            remove_stopwords();
-  
+            remove_stopwords_text();
+            remove_stopwords_title();
+            regular_words_parse(doc_text);
+            regular_words_parse(doc_title);
+
 
             Console.WriteLine("finish!");
 
         }
 
-        private static void remove_stopwords()
+
+        private void remove_stopwords_text()
         {
             Regex rgx_words = new Regex(@"[a-z']+", RegexOptions.IgnoreCase);
             MatchCollection matches = rgx_words.Matches(doc_text);
@@ -51,8 +67,25 @@ namespace RetEng
             }
             
         }
+        private void remove_stopwords_title()
+        {
+            Regex rgx_words = new Regex(@"[a-z']+", RegexOptions.IgnoreCase);
+            MatchCollection matches = rgx_words.Matches(doc_title);
 
-        private static short month_str_to_short(string month) // convert month name to short variable
+            foreach (Match m in matches)
+            {
+                if (Stopwords.is_stopword(m.Value))
+                {
+
+                    string before_match = doc_title.Substring(0, m.Index);
+                    string after_match = doc_title.Substring(m.Index + m.Length);
+                    doc_title = before_match + create_nulls(m.Length) + after_match;
+                }
+            }
+            
+        }
+
+        private short month_str_to_short(string month) // convert month name to short variable
         {
             if ((String.Compare(month, "January", StringComparison.OrdinalIgnoreCase) == 0) ||
                 (String.Compare(month, "jan", StringComparison.OrdinalIgnoreCase) == 0))
@@ -105,7 +138,25 @@ namespace RetEng
 
         }
 
-        private static bool is_matched(string pattern,string input) 
+        private void add_to_dic(string str,int pos,bool is_in_head)
+        {
+            if (termDic.ContainsKey(str))
+            {
+                termDic[str].ocurrences_in_doc++;
+                termDic[str].positions.Add(pos);
+                termDic[str].is_in_headline = is_in_head;
+            }
+            else
+            {
+                termDic.Add(str, new TermInDoc(doc_id));
+                termDic[str].positions.Add(pos);
+                termDic[str].doc_id = doc_id;
+                termDic[str].ocurrences_in_doc++;
+                termDic[str].is_in_headline = is_in_head;
+            }
+        }
+
+        private bool is_matched(string pattern,string input) 
             // checks the pattern of the string, return true if it is the pattern and else otherwise
             // the function is is needed to deremine how the data is presented,so we can know how to store it in the Term object
             // for example: date- "31 May 1978" or "May 31, 1978"
@@ -113,7 +164,7 @@ namespace RetEng
             Regex rgx = new Regex(pattern, RegexOptions.IgnoreCase);
             return rgx.IsMatch(input);   
         }
-        private static void mark_as_read(MatchCollection matches) 
+        private void mark_as_read(MatchCollection matches) 
             // change the text that matched to a regex to '#'s , so it won't match to another regex.
         {
             foreach (Match m in matches)
@@ -124,7 +175,7 @@ namespace RetEng
             }
         }
 
-        private static string create_nulls(int len)
+        private string create_nulls(int len)
         // return string of '#' to the function mark_as_read
         {
             string nulls = "";
@@ -134,41 +185,98 @@ namespace RetEng
         }
 
 
-        private static double complex_number_format_to_double (string num)
+        private double complex_number_format_to_double (string num)
             // the function convert a complex number format like 234,234,234 or 34 5/7 to double
         {
+            string regular_num = @"\d+";
+            string non_rational_num = @"\d+\.\d+";
             string rational_num = @"(\d+\s+)?\d+/\d+";
             string num_with_commas = @"\d{1,3}(,\d{3})+";
+            string all_num_formats = @"(" + num_with_commas + "|" + rational_num + "|" + non_rational_num + "|" + regular_num + ")";
+
             Regex rgx_numbers = new Regex(num_with_commas, RegexOptions.IgnoreCase);
+            Regex rgx_numbers2 = new Regex(rational_num, RegexOptions.IgnoreCase);
+
             if (rgx_numbers.IsMatch(num))
             {
-                return double.Parse(num.Replace(",",""));
+                string no_commas = num.Replace(",", "");
+                return double.Parse(new Regex(all_num_formats, RegexOptions.IgnoreCase).Match(no_commas).Value);
             }
 
-            Regex rgx_numbers2 = new Regex(rational_num, RegexOptions.IgnoreCase);
-            if (rgx_numbers2.IsMatch(num))
+
+            else if (rgx_numbers2.IsMatch(num))
             {
                 if (num.Contains(' '))
                 {
-                    string[] str = num.Split(' ');
+                    string[] str = num.Split(null);
+                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                     double coefficient = double.Parse(str[0]);
                     string[] str2 = str[1].Split('/');
                     double numinator = double.Parse(str2[0]);
                     double decriminator = double.Parse(str2[1]);
                     return ((coefficient * decriminator + numinator) / decriminator);
                 }
-                
+
                 string[] str3 = num.Split('/');
                 double numinator2 = double.Parse(str3[0]);
                 double decriminator2 = double.Parse(str3[1]);
                 return numinator2 / decriminator2;
             }
 
-            return double.Parse(num);
+            else
+                return double.Parse(new Regex(all_num_formats, RegexOptions.IgnoreCase).Match(num).Value);
 
 
         }
-        private static void numbers_parse()
+
+        private char big_number_identifier(string num)
+        {
+            string regular_num = @"\d+";
+            string non_rational_num = @"\d+\.\d+";
+            string rational_num = @"(\d+\s+)?\d+/\d+";
+            string num_with_commas = @"\d{1,3}(,\d{3})+";
+            string all_num_formats = @"(" + num_with_commas + "|" + rational_num + "|" + non_rational_num + "|" + regular_num + ")";
+
+            Regex rgx_million = new Regex(all_num_formats + @"(\s+million)|m", RegexOptions.IgnoreCase);
+            Regex rgx_billion = new Regex(all_num_formats + @"(\s+billion)|bn", RegexOptions.IgnoreCase);
+            Regex rgx_trillion = new Regex(all_num_formats + @"(\s+trillion)", RegexOptions.IgnoreCase);
+            Regex rgx_hundreds = new Regex(all_num_formats + @"(\s+hundreds)", RegexOptions.IgnoreCase);
+
+            string hun = rgx_hundreds.Match(num).Value;
+            string mil = rgx_million.Match(num).Value;
+            string bil = rgx_billion.Match(num).Value;
+            string tril = rgx_trillion.Match(num).Value;
+            if (hun != null)
+                return 'h';
+            if (mil != null)
+                return 'm';
+            if (bil != null)
+                return 'b';
+            if (tril != null)
+                return 't';
+
+            return 'n';
+
+        }
+
+        private void regular_words_parse(string text)
+        {
+            Stemmer stm = new Stemmer();
+            string pattern = @"[a-z]+([-'][a-z]+)?";
+            Regex rgx_anyWord = new Regex(pattern, RegexOptions.IgnoreCase);
+            MatchCollection matches = rgx_anyWord.Matches(text);
+
+            foreach (Match m in matches)
+            {
+                string word = stm.stemTerm(m.Value);
+                if (text.Equals(doc_text))
+                    add_to_dic(word, m.Index,false);
+                else if (text.Equals(doc_title))
+                    add_to_dic(word, m.Index, true);
+            }
+            
+        }
+        private void numbers_parse()
         {
             // numbers
             string regular_num = @"\d+";
@@ -200,8 +308,8 @@ namespace RetEng
             {
                 Regex rgx = new Regex(all_num_formats, RegexOptions.IgnoreCase);
                 Match m2 = rgx.Match(m.Value);
-                Number num = new Number(false, true, complex_number_format_to_double(m2.Value),m2.Length.ToString());
-                //add the term to the dictionary
+                Number num = new Number(false, true, complex_number_format_to_double(m2.Value),m2.Length.ToString(),big_number_identifier(m.Value));
+                add_to_dic(num.ToString(), m.Index,false);
             }
 
             // percent
@@ -213,8 +321,8 @@ namespace RetEng
             {
                 Regex rgx = new Regex(all_num_formats, RegexOptions.IgnoreCase);
                 Match m2 = rgx.Match(m.Value);
-                Number num = new Number(true, false, complex_number_format_to_double(m2.Value), m2.Length.ToString());
-                //add the term to the dictionary
+                Number num = new Number(true, false, complex_number_format_to_double(m2.Value), m2.Length.ToString(), big_number_identifier(m.Value));
+                add_to_dic(num.ToString(), m.Index, false);
             }
 
             // range
@@ -226,10 +334,10 @@ namespace RetEng
             {
                 Regex rgx = new Regex(all_num_formats, RegexOptions.IgnoreCase);
                 MatchCollection nums_in_ranges = rgx.Matches(m.Value);
-                Number num1 = new Number(false, false, complex_number_format_to_double(nums_in_ranges[0].Value), nums_in_ranges[0].Length.ToString());
-                Number num2 = new Number(false, false, complex_number_format_to_double(nums_in_ranges[1].Value), nums_in_ranges[1].Length.ToString());
+                Number num1 = new Number(false, false, complex_number_format_to_double(nums_in_ranges[0].Value), nums_in_ranges[0].Length.ToString(), big_number_identifier(m.Value));
+                Number num2 = new Number(false, false, complex_number_format_to_double(nums_in_ranges[1].Value), nums_in_ranges[1].Length.ToString(), big_number_identifier(m.Value));
                 Range rng = new Range(num1, num2);
-                //add the term to the dictionary
+                add_to_dic(rng.ToString(), m.Index, false);
             }
 
             // numbers
@@ -239,13 +347,13 @@ namespace RetEng
 
             foreach (Match m in num_matches)
             {
-                Number num = new Number(false, false, complex_number_format_to_double(m.Value), m.Length.ToString());
-                //add the term to the dictionary
+                Number num = new Number(false, false, complex_number_format_to_double(m.Value), m.Length.ToString(), big_number_identifier(m.Value));
+                add_to_dic(num.ToString(), m.Index, false);
             }
 
         }
 
-        public static void names_parse() // parse the names 
+        private void names_parse() // parse the names 
             //checked
         {
             //names
@@ -258,11 +366,13 @@ namespace RetEng
             foreach (Match m in names_matches)
             {
                 Name name = new Name(m.Value);
-                //add name to the dictionary
+                add_to_dic(name.ToString(), m.Index, false);
             }
         }
 
-        public static void dates_parse(string text) // parse the dates on the text
+
+
+        public void dates_parse(string text) // parse the dates on the text
         {
 
             //dates
@@ -295,53 +405,60 @@ namespace RetEng
                 if (is_matched(date_format_1, m.Value))
                 {
                     string[] str = m.Value.Split(' ');
+                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                     Date d = new Date(short.Parse(str[0]),month_str_to_short((str[1])),short.Parse(str[2]));
-                    // add the date to the dictionary
+                    add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_2, m.Value))
                 {
-                    string[] str = m.Value.Split(' ');
+                    string[] str = m.Value.Split(null);
+                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                     string day = str[0].Replace("th", "");
                     Date d = new Date(short.Parse(day), month_str_to_short(str[1]), short.Parse(str[2]));
-                    // add the date to the dictionary
+                    add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_3, m.Value)){
-                    string[] str = m.Value.Split(' ');
+                    string[] str = m.Value.Split(null);
+                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                     string year = "19" + str[2];
                     Date d = new Date(short.Parse(str[0]), month_str_to_short(str[1]), short.Parse(year));
-                    // add the date to the dictionary
+                    add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_4, m.Value))
                 {
-                    string[] str = m.Value.Split(' ');
+                    string[] str = m.Value.Split(null);
+                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                     Date d = new Date(short.Parse(str[0]), month_str_to_short(str[1]), 0);
-                    // add the date to the dictionary
+                    add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_7, m.Value))
                 {
                     string[] str1 = m.Value.Split(',');
-                    string[] str2 = str1[0].Split(' ');
+                    string[] str2 = str1[0].Split(null);
+                    str2 = str2.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                     string year = str1[1].Trim();
-                    Date d = new Date(short.Parse(str2[0]), month_str_to_short(str2[1]), short.Parse(year));
-                    // add the date to the dictionary
+                    Date d = new Date(short.Parse(str2[1]), month_str_to_short(str2[0]), short.Parse(year));
+                    add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_6, m.Value))
                 {
-                    string[] str = m.Value.Split(' ');
-                    Date d = new Date(0, month_str_to_short(str[0]), short.Parse(str[1]));
-                    // add the date to the dictionary
+                    string[] str = m.Value.Split(null);
+                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    Date d = new Date(1, month_str_to_short(str[0]), short.Parse(str[1]));
+                    add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_8, m.Value))
                 {
-                    string[] str = m.Value.Split(' ');
+                    string[] str = m.Value.Split(null);
+                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                     Date d = new Date(short.Parse(str[1]), month_str_to_short(str[0]), 0);
-                    // add the date to the dictionary
+                    add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_5, m.Value))
                 {
                     string year = m.Value.Trim();
-                    Date d = new Date(0, 0, short.Parse(year));
-                    // add the date to the dictionary
+                    Date d = new Date(1, 1, short.Parse(year));
+                    add_to_dic(d.ToString(), m.Index, false);
                 }
 
             }

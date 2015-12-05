@@ -13,8 +13,10 @@ namespace RetEng
         public string date { get; private set; }
         public string title { get; private set; }
         public string text { get; private set; }
+        public int doc_idx { get; private set; }
+        public string batch_id { get; private set; }
 
-        public Document(string doc)
+        public Document(string doc,int idx, string batchId)
         {
             CultureInfo provider = CultureInfo.InvariantCulture;
             int id_idx_start = doc.IndexOf("<DOCNO>", 0);
@@ -32,6 +34,9 @@ namespace RetEng
             int text_idx_start = doc.IndexOf("<TEXT>", 0);
             int text_idx_end = doc.IndexOf("</TEXT>");
             text = doc.Substring(text_idx_start + 7, text_idx_end - (text_idx_start + 7));
+
+            doc_idx = idx;
+            batch_id = batchId;
         }
 
         

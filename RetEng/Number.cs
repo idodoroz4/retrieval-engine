@@ -13,15 +13,24 @@ namespace RetEng
         public double _value  { get; private set;}
         public string _size { get; private set; }
 
-        public Number(bool is_percent, bool is_price, double value, string size )
+        // h - hundreds, m - million, b - billion, t - trillion, n - none
+        public char _multi { get; private set; }
+
+
+        public Number(bool is_percent, bool is_price, double value, string size ,char multi)
         {
             _is_percent = is_percent;
             _is_price = is_price;
             _value = value;
             _size = size;
+            _multi = multi;
             _counts = 1;
         }
         public override string get_value()
+        {
+            return _value.ToString();
+        }
+        public override string ToString()
         {
             return _value.ToString();
         }

@@ -24,7 +24,10 @@ namespace RetEng
         public MainWindow()
         {
             InitializeComponent();
-            ReadFile.get_docs(@"D:\corpus");
+            ReadFile r = new ReadFile();
+            r.get_docs(@"D:\corpus");
+            
+            
             
 
 

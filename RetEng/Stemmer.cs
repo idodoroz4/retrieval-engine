@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyName("")]
 
-namespace SearchEngine
+namespace RetEng
 {
 
     /*

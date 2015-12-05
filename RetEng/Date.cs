@@ -19,9 +19,13 @@ namespace RetEng
             _year = year > -1 && year < 10000 ? year : error;
             if (_day == error && _month == error && _year == error) throw new ArgumentException ("Date not exists");
     }
-        public override string get_value()
+        public override string ToString()
         {
             return _day.ToString() +"-"+ _month.ToString() + "-" + _year.ToString();
+        }
+        public override string get_value()
+        {
+            return ToString();
         }
     }
    
