@@ -24,8 +24,10 @@ namespace RetEng
         public MainWindow()
         {
             InitializeComponent();
-            ReadFile r = new ReadFile();
-            r.get_docs(@"D:\corpus");
+            Controller ctrl = new Controller();
+
+            ctrl.initiate();
+
             
             
             

@@ -15,6 +15,7 @@ namespace RetEng
         public string text { get; private set; }
         public int doc_idx { get; private set; }
         public string batch_id { get; private set; }
+ 
 
         public Document(string doc,int idx, string batchId)
         {

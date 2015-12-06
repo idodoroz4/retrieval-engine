@@ -9,37 +9,31 @@ namespace RetEng
 {
     class ReadFile
     {
-        public void get_docs(string path)
+        public List<Document> get_docs(string file_path)
         {
-            if (! Directory.Exists(path) ){ // checks if the given path not valid
-                
-            }
-            string[] files = Directory.GetFiles(path);
-            foreach (string file in files){
-                Batch single_batch = new Batch();
-                int offset = 0;
-                string text = System.IO.File.ReadAllText(file);
-                while (text.IndexOf("<DOC>", 0) != -1)
-                {
-                    
-                    int doc_idx_start = text.IndexOf("<DOC>", 0);
-                    int doc_idx_end = text.IndexOf("</DOC>");
-                    string single_doc = text.Substring(doc_idx_start + 6, doc_idx_end - (doc_idx_start + 6));
-                    Document doc = new Document(single_doc,offset,file);
-                    /* for testing only */
-                    Parser pr = new Parser();
 
-                    pr.parse_doc(doc);
-                    /* end of testing */
-                    offset = doc_idx_end + 2;
-                    single_batch.AddDoc(doc);
-                    text = text.Substring(doc_idx_end + 6, text.Length - (doc_idx_end + 6));
-                }
-               
+            List <Document> my_batch = new List<Document>();
+           
+            int offset = 0;
+            string text = System.IO.File.ReadAllText(file_path);
+            while (text.IndexOf("<DOC>", 0) != -1)
+            {
+                    
+                int doc_idx_start = text.IndexOf("<DOC>", 0);
+                int doc_idx_end = text.IndexOf("</DOC>");
+                string single_doc = text.Substring(doc_idx_start + 6, doc_idx_end - (doc_idx_start + 6));
+                Document doc = new Document(single_doc,offset, file_path);
+                offset = doc_idx_end + 2;
+                my_batch.Add(doc);
+                text = text.Substring(doc_idx_end + 6, text.Length - (doc_idx_end + 6));
             }
+
+            return my_batch;
+               
+      }
             
            
-        }
+        
 
     }
 }

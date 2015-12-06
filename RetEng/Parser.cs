@@ -21,8 +21,9 @@ namespace RetEng
         Stemmer stem;
         
 
-        public void parse_doc (Document doc) 
+        public Dictionary<string,TermInDoc> parse_doc (Document doc) 
         {
+
             termDic = new Dictionary<string, TermInDoc>();
             doc_text = doc.text;
             doc_title = doc.title;
@@ -46,7 +47,7 @@ namespace RetEng
             regular_words_parse(doc_title);
 
 
-            Console.WriteLine("finish!");
+            return termDic;
 
         }
 
