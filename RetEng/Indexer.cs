@@ -12,7 +12,7 @@ namespace RetEng
     class Indexer
     {
         ConcurrentDictionary<string, List<TermInDoc>> cache;
-        List<string> queue;
+        Queue<string> queue;
         ConcurrentDictionary<string, Posting> main_dic;
         int _cache_size;
         int _heap_size;
@@ -20,11 +20,15 @@ namespace RetEng
         public Indexer(int cache_size, int heap)
         {
             cache = new ConcurrentDictionary<string, List<TermInDoc>>();
-            queue = new List<string>();
+            queue = new Queue<string>();
             main_dic = new ConcurrentDictionary<string,Posting>();
             _cache_size = cache_size;
             _heap_size = heap;
+           
+
         }
+
+
         public void insert(Dictionary<string, TermInDoc> local)
         {
             foreach (var item in local)
@@ -60,8 +64,7 @@ namespace RetEng
         }
         private void promote_queue(string key, TermInDoc term)
         {
-                queue.Remove(key);
-                queue.Add(key);
+             // needs to promote
                 cache[key].Add(term);
         }
         private void add_to_cache(string key, TermInDoc term)
@@ -70,14 +73,13 @@ namespace RetEng
             list.Add(term);
             if (queue.Count < _cache_size)
             {
-                queue.Add(key);
+                queue.Enqueue(key);
             }
             else
             {
-                string removal_key = queue[0];
+                string removal_key = queue.Dequeue();
                 write(removal_key, cache[removal_key]);
-                queue.RemoveAt(0);
-                queue.Add(key);
+                queue.Enqueue(key);
                 
             }
             cache.TryAdd(key, list);
@@ -87,6 +89,7 @@ namespace RetEng
             private void write(string key, List<TermInDoc> terms)
             {
                 string output;
+                
                 if (File.Exists(key + ".txt"))
                 {
                     string input_json = System.IO.File.ReadAllText(key + ".txt");
@@ -99,7 +102,7 @@ namespace RetEng
                 {
                     output = JsonConvert.SerializeObject(terms, Formatting.Indented);
                 }
-                System.IO.File.WriteAllText(key + ".txt", output);
+                System.IO.File.WriteAllText("_" + key + ".txt", output);
                 List<TermInDoc> outt;
                 cache.TryRemove(key,out outt);
             }

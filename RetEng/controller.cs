@@ -14,70 +14,142 @@ namespace RetEng
         private ConcurrentQueue<string> batch_files;
         private ConcurrentQueue<Document> docs_to_parse;
         private ConcurrentQueue<Dictionary<string, TermInDoc>> termAfterParse;
-        private ConcurrentDictionary<Document, int> num_of_terms_in_doc;
+        private ConcurrentDictionary<string, int> num_of_terms_in_doc;
         private int num_of_threads_readFile;
         private int num_of_threads_Parser;
         private int num_of_threads_indexer;
         public bool readFileProcessFinished { get; private set; }
         public bool parserProcessFinished { get; private set; }
         public bool indexerProcessFinished { get; private set; }
+        private int cacheSize;
+        private int heapSize;
 
-    public Controller()
+        private Task[] readFileTasks;
+        private Task[] parserTasks;
+
+        public Controller(int cache_size, int heap_size)
         {
             batch_files = new ConcurrentQueue<string>();
             docs_to_parse = new ConcurrentQueue<Document>();
             termAfterParse = new ConcurrentQueue<Dictionary<string, TermInDoc>>();
-            num_of_terms_in_doc = new ConcurrentDictionary<Document, int>();
+            num_of_terms_in_doc = new ConcurrentDictionary<string, int>();
             
-            num_of_threads_readFile = 10;
-            num_of_threads_Parser = 10;
+            num_of_threads_readFile = 4;
+            num_of_threads_Parser = 8;
             num_of_threads_indexer = 1;
 
             readFileProcessFinished = false;
             parserProcessFinished = false;
             indexerProcessFinished = false;
 
-        }
+            cacheSize = cache_size;
+            heapSize = heap_size;
 
+        }
+        
+        public string data()
+        {
+            return "#Batch: " + batch_files.Count +"\nDocToParse: " + docs_to_parse.Count + 
+                   "\nTermAfterParse: " + termAfterParse.Count;
+        }
         public void initiate()
         {
             // insert the batch files into the "batch_files" queue
+            //foreach (string file in Directory.GetFiles(@"D:\corpus"))
             foreach (string file in Directory.GetFiles(@"D:\corpus"))
                 insertBatch(file);
 
-            Task[] readFileTasks = new Task[num_of_threads_readFile];
+
+            Task status = Task.Run(() => { read_data(); });
+            readFileAsync();
+            parserAsync();
+
+           /* readFileTasks = new Task[num_of_threads_readFile];
             for (int i=0; i< num_of_threads_readFile; i++)
             {
+                
                 Task readfile = Task.Run(() => { startReadFile(); });
                 readFileTasks[i] = readfile;
             }
 
-            Task[] parserTasks = new Task[num_of_threads_Parser];
+            parserTasks = new Task[num_of_threads_Parser];
             for (int i = 0; i < num_of_threads_Parser; i++)
             {
+                /*Thread newThread = new Thread(startParser);
+                newThread.Start();
                 Task parser = Task.Run(() => { startParser(); });
-                readFileTasks[i] = parser;
+                
+                parserTasks[i] = parser;
+            }*/
+
+            
+            Task indexer = Task.Run(() => { startindexer(cacheSize, heapSize); });
+            //Task waitReadFile = Task.Run(() => { waitforReadFileProcess(readFileTasks); });    
+            //Task waitParser = Task.Run(() => { waitforparserProcess(parserTasks); });
+
+            Console.WriteLine("done!");
+        }
+
+        private Task readFileTask()
+        {
+            return Task.Run(() => { startReadFile(); });
+        }
+
+        private Task ParserTask()
+        {
+            return Task.Run(() => { startParser(); });
+        }
+
+        private async void readFileAsync()
+        {
+            await readFileTask();
+            readFileProcessFinished = true;
+        }
+
+        private async void parserAsync()
+        {
+            await ParserTask();
+            parserProcessFinished = true;
+        }
+
+        private void read_data()
+        {
+            Thread.Sleep(5000);
+            while (true)
+            {
+
+                /*int readFilethreads = 0;
+                int parserthreads = 0;
+                foreach (Task t in readFileTasks)
+                    if (!t.IsCompleted)
+                        readFilethreads++;
+
+                foreach (Task t in parserTasks)
+                    if (!t.IsCompleted)
+                        parserthreads++;
+                */
+                string str = "#Batch: " + batch_files.Count + "\nDocToParse: " + docs_to_parse.Count +
+                   "\nTermAfterParse: " + termAfterParse.Count + "\nReadFileThreads: ";
+                   /*+ readFilethreads + " from " + num_of_threads_readFile +
+                   "\nParserThreads: " + parserthreads + "from" + num_of_threads_Parser;*/
+                Console.WriteLine(str);
+                Thread.Sleep(5000);
             }
-
-            //Task indexer = 
-
-            Task waitReadFile = Task.Run(() => { waitforReadFileProcess(readFileTasks); });
-            Task waitParser = Task.Run(() => { waitforparserProcess(parserTasks); });
-
 
         }
         
-
-        private void startReadFile()
+        
+        public void startReadFile()
         {
             string btch;
             List<Document> doc_list;
+            ReadFile rf = new ReadFile();
+
             while (!batch_files.IsEmpty)
             {
-                if (batch_files.TryDequeue(out btch)){
-                    ReadFile rf = new ReadFile();
+                if (batch_files.TryDequeue(out btch))
+                {
                     doc_list = rf.get_docs(btch);
-
                     foreach (Document d in doc_list)
                         docs_to_parse.Enqueue(d);
                 }
@@ -88,22 +160,34 @@ namespace RetEng
         {
             Document d;
             Dictionary<string, TermInDoc> TermDic;
-            while (!readFileProcessFinished && !docs_to_parse.IsEmpty)
+            Parser prs = new Parser();
+
+            while (!readFileProcessFinished || !docs_to_parse.IsEmpty)
             {
                 if (docs_to_parse.TryDequeue(out d))
-                {
-                    Parser prs = new Parser();
+                {  
                     TermDic = prs.parse_doc(d);
                     termAfterParse.Enqueue(TermDic);
                 }
             }
         }
+
+
         private void startindexer(int cache_size, int heap_size)
         {
-            while (!parserProcessFinished && termAfterParse.Count > 0)
+            Indexer idxr = new Indexer(cache_size, heap_size);
+            Dictionary<string, TermInDoc> dicTerm;
+            while (!parserProcessFinished || !termAfterParse.IsEmpty)
             {
-                Indexer idxr = new Indexer(cache_size, heap_size);
-                //idxr.insert();
+
+                if (termAfterParse.TryDequeue(out dicTerm))
+                {
+                    List<TermInDoc> tempList = dicTerm.Values.ToList();
+                   // num_of_terms_in_doc[tempList[0]._doc_id] = tempList.Count;
+                    
+                    
+                    idxr.insert(dicTerm);
+                }
             }
         }
         private void waitforReadFileProcess(Task[] tasks)
@@ -153,12 +237,12 @@ namespace RetEng
             return dic;
         }
 
-        public void insert_num_of_terms_in_doc(Document doc,int num_of_terms)
+        public void insert_num_of_terms_in_doc(string doc,int num_of_terms)
         {
             num_of_terms_in_doc[doc] = num_of_terms;
         }
 
-        public int get_num_of_terms_in_doc(Document doc)
+        public int get_num_of_terms_in_doc(string doc)
         {
             return num_of_terms_in_doc[doc];
         }

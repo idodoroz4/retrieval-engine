@@ -12,14 +12,20 @@ namespace RetEng
     {
         Dictionary<string, TermInDoc> termDic;
         
-        static string doc_text;
-        static string doc_title;
-        static string doc_date;
-        static string doc_id;
-        static string batch_id;
-        static int doc_offset;
+        string doc_text;
+        string doc_title;
+        string doc_date;
+        string doc_id;
+        string batch_id;
+        int doc_offset;
         Stemmer stem;
-        
+        Stopwords stopword;
+
+        public Parser()
+        {
+            stopword = new Stopwords();
+            stem = new Stemmer();
+        }
 
         public Dictionary<string,TermInDoc> parse_doc (Document doc) 
         {
@@ -29,13 +35,8 @@ namespace RetEng
             doc_title = doc.title;
             doc_date = doc.date;
             doc_id = doc.id;
-            string original = doc.text;
             batch_id = doc.batch_id;
             doc_offset = doc.doc_idx;
-            stem = new Stemmer();
-            
-
-            Stopwords stopword = Stopwords.Instance;
 
             dates_parse(doc_text);
             names_parse();
@@ -43,6 +44,7 @@ namespace RetEng
 
             remove_stopwords_text();
             remove_stopwords_title();
+
             regular_words_parse(doc_text);
             regular_words_parse(doc_title);
 
@@ -50,39 +52,64 @@ namespace RetEng
             return termDic;
 
         }
-
-
         private void remove_stopwords_text()
         {
+            string post_stop = "";
+            List<string> lst = doc_text.Split(null).ToList();
+            foreach (string str in lst)
+            {
+                if (stopword.is_stopword(str))
+                    post_stop += create_nulls(str.Length) + " ";
+                else
+                    post_stop += str + " ";
+
+            }
+            doc_text = post_stop;
+
+
+            /*
             Regex rgx_words = new Regex(@"[a-z']+", RegexOptions.IgnoreCase);
             MatchCollection matches = rgx_words.Matches(doc_text);
             
             foreach (Match m in matches)
             {
-               if (Stopwords.is_stopword(m.Value))
+               if (stopword.is_stopword(m.Value))
                 {
                     string before_match = doc_text.Substring(0, m.Index);
                     string after_match = doc_text.Substring(m.Index + m.Length);
                     doc_text = before_match + create_nulls(m.Length) + after_match;
                 }
-            }
+            }*/
             
         }
         private void remove_stopwords_title()
         {
-            Regex rgx_words = new Regex(@"[a-z']+", RegexOptions.IgnoreCase);
+
+            string post_stop = "";
+            List<string> lst = doc_title.Split(null).ToList();
+            foreach (string str in lst)
+            {
+                if (stopword.is_stopword(str))
+                    post_stop += create_nulls(str.Length) + " ";
+                else
+                    post_stop += str + " ";
+
+            }
+            doc_title = post_stop;
+
+            /*Regex rgx_words = new Regex(@"[a-z']+", RegexOptions.IgnoreCase);
             MatchCollection matches = rgx_words.Matches(doc_title);
 
             foreach (Match m in matches)
             {
-                if (Stopwords.is_stopword(m.Value))
+                if (stopword.is_stopword(m.Value))
                 {
 
                     string before_match = doc_title.Substring(0, m.Index);
                     string after_match = doc_title.Substring(m.Index + m.Length);
                     doc_title = before_match + create_nulls(m.Length) + after_match;
                 }
-            }
+            }*/
             
         }
 
@@ -143,17 +170,17 @@ namespace RetEng
         {
             if (termDic.ContainsKey(str))
             {
-                termDic[str].ocurrences_in_doc++;
-                termDic[str].positions.Add(pos);
-                termDic[str].is_in_headline = is_in_head;
+                termDic[str]._ocurrences_in_doc++;
+                termDic[str]._positions.Add(pos);
+                termDic[str]._is_in_headline = is_in_head;
             }
             else
             {
-                termDic.Add(str, new TermInDoc(doc_id));
-                termDic[str].positions.Add(pos);
-                termDic[str].doc_id = doc_id;
-                termDic[str].ocurrences_in_doc++;
-                termDic[str].is_in_headline = is_in_head;
+                termDic.Add(str, new TermInDoc(doc_id,batch_id));
+                termDic[str]._positions.Add(pos);
+                termDic[str]._doc_id = doc_id;
+                termDic[str]._ocurrences_in_doc++;
+                termDic[str]._is_in_headline = is_in_head;
             }
         }
 
@@ -170,6 +197,7 @@ namespace RetEng
         {
             foreach (Match m in matches)
             {
+                //doc_text = doc_text.Replace(m.Value, create_nulls(m.Value.Length));
                 string before_match = doc_text.Substring(0, m.Index);
                 string after_match = doc_text.Substring(m.Index + m.Length);
                 doc_text = before_match + create_nulls(m.Length) + after_match;
@@ -262,14 +290,14 @@ namespace RetEng
 
         private void regular_words_parse(string text)
         {
-            Stemmer stm = new Stemmer();
+
             string pattern = @"[a-z]+([-'][a-z]+)?";
             Regex rgx_anyWord = new Regex(pattern, RegexOptions.IgnoreCase);
             MatchCollection matches = rgx_anyWord.Matches(text);
 
             foreach (Match m in matches)
             {
-                string word = stm.stemTerm(m.Value);
+                string word = stem.stemTerm(m.Value);
                 if (text.Equals(doc_text))
                     add_to_dic(word, m.Index,false);
                 else if (text.Equals(doc_title))

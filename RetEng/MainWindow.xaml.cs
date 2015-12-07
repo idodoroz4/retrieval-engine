@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Text.RegularExpressions;
+using System.IO;
+using System.Threading;
 
 namespace RetEng
 {
@@ -24,20 +26,44 @@ namespace RetEng
         public MainWindow()
         {
             InitializeComponent();
-            Controller ctrl = new Controller();
 
-            ctrl.initiate();
-
+            int cache_size = 50000;
+            int heap_size = 50;
+            delete_all_textFiles();
+            Console.WriteLine();
+            //Controller ctrl = new Controller(cache_size,heap_size);
+            //Thread t = new Thread(() => read_data(ctrl));
             
-            
-            
-
-
+            //ctrl.initiate();
+            //t.Start();
 
 
 
         }
+        private void read_data(Controller c)
+        {
+            while (true)
+            {
+                textBox.Text = c.data();
+                Thread.Sleep(5000);
+            }
+            
+        }
+        private void delete_all_textFiles()
+        {
+            //string directoryPath = @"C:\test\";
+            string extension = "*.txt";
+            /*if (!Directory.Exists(directoryPath))
+                return;*/
 
+            DirectoryInfo di = new DirectoryInfo(Directory.GetCurrentDirectory());
+            FileInfo[] files = di.GetFiles(extension).Where(p => p.Extension.ToLowerInvariant() == ".txt").ToArray();
+            foreach (FileInfo file in files)
+            {
+                file.Attributes = FileAttributes.Normal;
+                File.Delete(file.FullName);
+            }
+        }
         private void reg (string pattern)
         {
             //string sText = " $323,000 dollars 2,444 $4.1312312334 million $33bn dollars 3/4565m $2,000 billion 45455/3 56 and dollars 900";

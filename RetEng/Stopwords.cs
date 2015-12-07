@@ -7,14 +7,12 @@ using System.Threading.Tasks;
 
 namespace RetEng
 {
-    public sealed class Stopwords
+    public class Stopwords
     {
         private string stopword_file_path = @"Resources\stop_words.txt";
-        private static Stopwords instance = null;
-        private static object syncRoot = new Object();
-        public static Dictionary<string, bool> swDic;
+        public Dictionary<string, bool> swDic;
 
-        private Stopwords()
+        public Stopwords()
         {
             swDic = new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase);
             foreach (string line in File.ReadLines(stopword_file_path))
@@ -22,24 +20,8 @@ namespace RetEng
                     swDic.Add(line, true);
         }
 
-        public static Stopwords Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        if (instance == null)
-                            instance = new Stopwords();
-                    }
-                }
 
-                return instance;
-            }
-        }
-
-        public static bool is_stopword (string value)
+        public bool is_stopword (string value)
         {
             return swDic.ContainsKey(value);
         }
