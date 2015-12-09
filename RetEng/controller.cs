@@ -102,7 +102,8 @@ namespace RetEng
 
         private async void readFileAsync()
         {
-            await readFileTask();
+            for (int i = 0; i < 3; i++)
+                await readFileTask();
             readFileProcessFinished = true;
         }
 
@@ -172,23 +173,22 @@ namespace RetEng
             }
         }
 
-
         private void startindexer(int cache_size, int heap_size)
         {
             Indexer idxr = new Indexer(cache_size, heap_size);
             Dictionary<string, TermInDoc> dicTerm;
             while (!parserProcessFinished || !termAfterParse.IsEmpty)
             {
-
                 if (termAfterParse.TryDequeue(out dicTerm))
                 {
                     List<TermInDoc> tempList = dicTerm.Values.ToList();
                    // num_of_terms_in_doc[tempList[0]._doc_id] = tempList.Count;
-                    
-                    
                     idxr.insert(dicTerm);
                 }
             }
+            // After Indexer finished, save memory and cache
+            idxr.save_memory();
+            idxr.save_cache();
         }
         private void waitforReadFileProcess(Task[] tasks)
         {
