@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Newtonsoft.Json;
 using System.IO;
+using System.Threading;
 
 namespace RetEng
 {
     class Indexer
     {
         ConcurrentDictionary<string, List<TermInDoc>> cache;
-        Queue<string> queue;
+        ConcurrentQueue<string> queue;
         ConcurrentDictionary<string, Posting> main_dic;
         int _cache_size;
         int _heap_size;
@@ -20,12 +21,10 @@ namespace RetEng
         public Indexer(int cache_size, int heap)
         {
             cache = new ConcurrentDictionary<string, List<TermInDoc>>();
-            queue = new Queue<string>();
+            queue = new ConcurrentQueue<string>();
             main_dic = new ConcurrentDictionary<string,Posting>();
             _cache_size = cache_size;
             _heap_size = heap;
-           
-
         }
 
 
@@ -48,7 +47,29 @@ namespace RetEng
                 }
             }
         }
+        public void save_memory()
+        {
+            string output = JsonConvert.SerializeObject(main_dic, Formatting.Indented);
+            System.IO.File.WriteAllText("main_memory.txt", output);
+        }
 
+        private Task write_task(string s, List<TermInDoc> term)
+        {
+            return Task.Run(() => { write(s, term); });
+        }
+
+        private async void write_async(string s, List<TermInDoc> term)
+        {
+            await write_task(s, term);
+        }
+
+        public void save_cache()
+        {
+            foreach (var pair in cache)
+            {
+                write(pair.Key, pair.Value);
+            }
+        }
         private void add_to_dic(string p, TermInDoc termInDoc)
         {
             Posting post = new Posting();
@@ -77,13 +98,16 @@ namespace RetEng
             }
             else
             {
-                string removal_key = queue.Dequeue();
-                write(removal_key, cache[removal_key]);
-                queue.Enqueue(key);
-                
+                string removal_key;
+                if (queue.TryDequeue(out removal_key))
+                {
+                    //Thread io = new Thread(() => write(removal_key, cache[removal_key]));
+                    //io.Start(); NEED TO CHECK WHETHER THREAD OR TASK IS BETTER!
+                    write_async(removal_key, cache[removal_key]);
+                    queue.Enqueue(key);
+                }  
             }
-            cache.TryAdd(key, list);
-              
+            cache.TryAdd(key, list);   
         }
         
             private void write(string key, List<TermInDoc> terms)
@@ -106,7 +130,6 @@ namespace RetEng
                 List<TermInDoc> outt;
                 cache.TryRemove(key,out outt);
             }
-          
     }
 
 }
