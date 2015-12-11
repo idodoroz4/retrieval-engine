@@ -12,6 +12,7 @@ namespace RetEng
 {
     class Indexer
     {
+        private static object locker;
         ConcurrentDictionary<string, List<TermInDoc>> cache;
         ConcurrentQueue<string> queue;
         ConcurrentDictionary<string, Posting> main_dic;
@@ -20,6 +21,7 @@ namespace RetEng
 
         public Indexer(int cache_size, int heap)
         {
+            locker = new object();
             cache = new ConcurrentDictionary<string, List<TermInDoc>>();
             queue = new ConcurrentQueue<string>();
             main_dic = new ConcurrentDictionary<string,Posting>();
@@ -103,33 +105,45 @@ namespace RetEng
                 {
                     //Thread io = new Thread(() => write(removal_key, cache[removal_key]));
                     //io.Start(); NEED TO CHECK WHETHER THREAD OR TASK IS BETTER!
-                    write_async(removal_key, cache[removal_key]);
+                    List<TermInDoc> templist = new List<TermInDoc>(cache[removal_key]);
+                    write_async(removal_key, templist);
                     queue.Enqueue(key);
                 }  
             }
             cache.TryAdd(key, list);   
         }
         
-            private void write(string key, List<TermInDoc> terms)
+        private void write(string key, List<TermInDoc> terms)
+        {
+            
+            string output;
+
+            if (File.Exists(key + ".txt"))
             {
-                string output;
-                
-                if (File.Exists(key + ".txt"))
-                {
-                    string input_json = System.IO.File.ReadAllText(key + ".txt");
-                    List<TermInDoc> list = JsonConvert.DeserializeObject<List<TermInDoc>>(input_json);
-                    list.AddRange(terms);
-                    output = JsonConvert.SerializeObject(list, Formatting.Indented);
-                 
-                }
-                else
-                {
-                    output = JsonConvert.SerializeObject(terms, Formatting.Indented);
-                }
-                System.IO.File.WriteAllText("_" + key + ".txt", output);
-                List<TermInDoc> outt;
-                cache.TryRemove(key,out outt);
+                string input_json = System.IO.File.ReadAllText(key + ".txt");
+                List<TermInDoc> list = JsonConvert.DeserializeObject<List<TermInDoc>>(input_json);
+                list.AddRange(terms);
+                output = JsonConvert.SerializeObject(list, Formatting.Indented);
+
             }
+            else
+            {
+                output = JsonConvert.SerializeObject(terms, Formatting.Indented);
+            }
+
+
+            lock (locker)
+            {
+                System.IO.File.WriteAllText("_" + key + ".txt", output);
+            }
+            
+                
+            
+            List<TermInDoc> outt;
+            cache.TryRemove(key,out outt);
+        }
+
+        
     }
 
 }

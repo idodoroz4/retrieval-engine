@@ -27,14 +27,14 @@ namespace RetEng
         {
             InitializeComponent();
 
-            int cache_size = 50000;
+            int cache_size = 2000;
             int heap_size = 50;
             delete_all_textFiles();
             Console.WriteLine();
-            //Controller ctrl = new Controller(cache_size,heap_size);
+            Controller ctrl = new Controller(cache_size,heap_size);
             //Thread t = new Thread(() => read_data(ctrl));
             
-            //ctrl.initiate();
+            ctrl.initiate();
             //t.Start();
 
 

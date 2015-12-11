@@ -56,12 +56,13 @@ namespace RetEng
         {
             // insert the batch files into the "batch_files" queue
             //foreach (string file in Directory.GetFiles(@"D:\corpus"))
-            foreach (string file in Directory.GetFiles(@"D:\corpus"))
+            foreach (string file in Directory.GetFiles(@"D:\small_corpus"))
                 insertBatch(file);
 
 
             Task status = Task.Run(() => { read_data(); });
-            readFileAsync();
+            for (int i = 0; i < 2; i++)
+                readFileAsync();
             parserAsync();
 
            /* readFileTasks = new Task[num_of_threads_readFile];
@@ -102,8 +103,7 @@ namespace RetEng
 
         private async void readFileAsync()
         {
-            for (int i = 0; i < 3; i++)
-                await readFileTask();
+            await readFileTask();
             readFileProcessFinished = true;
         }
 
