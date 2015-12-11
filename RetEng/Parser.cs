@@ -12,8 +12,8 @@ namespace RetEng
     {
         Dictionary<string, TermInDoc> termDic;
         
-        string doc_text;
-        string doc_title;
+        StringBuilder doc_text;
+        StringBuilder doc_title;
         string doc_date;
         string doc_id;
         string batch_id;
@@ -31,22 +31,22 @@ namespace RetEng
         {
 
             termDic = new Dictionary<string, TermInDoc>();
-            doc_text = doc.text;
-            doc_title = doc.title;
+            doc_text = new StringBuilder(doc.text);
+            doc_title = new StringBuilder(doc.title);
             doc_date = doc.date;
             doc_id = doc.id;
             batch_id = doc.batch_id;
             doc_offset = doc.doc_idx;
 
-            dates_parse(doc_text);
+            dates_parse(doc_text.ToString());
             names_parse();
             numbers_parse();
 
             remove_stopwords_text();
             remove_stopwords_title();
 
-            regular_words_parse(doc_text);
-            regular_words_parse(doc_title);
+            regular_words_parse_text();
+            regular_words_parse_title();
 
 
             return termDic;
@@ -54,62 +54,20 @@ namespace RetEng
         }
         private void remove_stopwords_text()
         {
-            string post_stop = "";
-            List<string> lst = doc_text.Split(null).ToList();
-            foreach (string str in lst)
-            {
-                if (stopword.is_stopword(str))
-                    post_stop += create_nulls(str.Length) + " ";
-                else
-                    post_stop += str + " ";
-
-            }
-            doc_text = post_stop;
-
-
-            /*
-            Regex rgx_words = new Regex(@"[a-z']+", RegexOptions.IgnoreCase);
-            MatchCollection matches = rgx_words.Matches(doc_text);
+            List<string> words = doc_text.ToString().Split(null).ToList();
+            foreach (string sw in words)
+                if (stopword.is_stopword(sw))
+                    doc_text.Replace(sw, create_nulls(sw.Length));
             
-            foreach (Match m in matches)
-            {
-               if (stopword.is_stopword(m.Value))
-                {
-                    string before_match = doc_text.Substring(0, m.Index);
-                    string after_match = doc_text.Substring(m.Index + m.Length);
-                    doc_text = before_match + create_nulls(m.Length) + after_match;
-                }
-            }*/
-            
+               
+
         }
         private void remove_stopwords_title()
         {
-
-            string post_stop = "";
-            List<string> lst = doc_title.Split(null).ToList();
-            foreach (string str in lst)
-            {
-                if (stopword.is_stopword(str))
-                    post_stop += create_nulls(str.Length) + " ";
-                else
-                    post_stop += str + " ";
-
-            }
-            doc_title = post_stop;
-
-            /*Regex rgx_words = new Regex(@"[a-z']+", RegexOptions.IgnoreCase);
-            MatchCollection matches = rgx_words.Matches(doc_title);
-
-            foreach (Match m in matches)
-            {
-                if (stopword.is_stopword(m.Value))
-                {
-
-                    string before_match = doc_title.Substring(0, m.Index);
-                    string after_match = doc_title.Substring(m.Index + m.Length);
-                    doc_title = before_match + create_nulls(m.Length) + after_match;
-                }
-            }*/
+            List<string> words = doc_title.ToString().Split(null).ToList();
+            foreach (string sw in words)
+                if (stopword.is_stopword(sw))
+                    doc_title.Replace(sw, create_nulls(sw.Length));
             
         }
 
@@ -197,10 +155,12 @@ namespace RetEng
         {
             foreach (Match m in matches)
             {
+                doc_text.Replace(m.Value, create_nulls(m.Length), m.Index, m.Length);
+                
                 //doc_text = doc_text.Replace(m.Value, create_nulls(m.Value.Length));
-                string before_match = doc_text.Substring(0, m.Index);
+                /*string before_match = doc_text.Substring(0, m.Index);
                 string after_match = doc_text.Substring(m.Index + m.Length);
-                doc_text = before_match + create_nulls(m.Length) + after_match;
+                doc_text = before_match + create_nulls(m.Length) + after_match;*/
             }
         }
 
@@ -288,22 +248,29 @@ namespace RetEng
 
         }
 
-        private void regular_words_parse(string text)
+        private void regular_words_parse_text()
         {
 
             string pattern = @"[a-z]+([-'][a-z]+)?";
             Regex rgx_anyWord = new Regex(pattern, RegexOptions.IgnoreCase);
-            MatchCollection matches = rgx_anyWord.Matches(text);
+            MatchCollection matches = rgx_anyWord.Matches(doc_text.ToString());
 
             foreach (Match m in matches)
-            {
-                string word = stem.stemTerm(m.Value);
-                if (text.Equals(doc_text))
-                    add_to_dic(word, m.Index,false);
-                else if (text.Equals(doc_title))
-                    add_to_dic(word, m.Index, true);
-            }
+                add_to_dic(stem.stemTerm(m.Value), m.Index, false);
             
+            
+        }
+        private void regular_words_parse_title()
+        {
+
+            string pattern = @"[a-z]+([-'][a-z]+)?";
+            Regex rgx_anyWord = new Regex(pattern, RegexOptions.IgnoreCase);
+            MatchCollection matches = rgx_anyWord.Matches(doc_title.ToString());
+
+            foreach (Match m in matches)
+                add_to_dic(stem.stemTerm(m.Value), m.Index, true);
+
+
         }
         private void numbers_parse()
         {
@@ -330,7 +297,7 @@ namespace RetEng
 
             // price
             Regex rgx_prices = new Regex(prices, RegexOptions.IgnoreCase);
-            MatchCollection pr_matches = rgx_prices.Matches(doc_text);
+            MatchCollection pr_matches = rgx_prices.Matches(doc_text.ToString());
             mark_as_read(pr_matches);
 
             foreach (Match m in pr_matches)
@@ -343,7 +310,7 @@ namespace RetEng
 
             // percent
             Regex rgx_percent = new Regex(percent, RegexOptions.IgnoreCase);
-            MatchCollection per_matches = rgx_percent.Matches(doc_text);
+            MatchCollection per_matches = rgx_percent.Matches(doc_text.ToString());
             mark_as_read(per_matches);
 
             foreach (Match m in per_matches)
@@ -356,7 +323,7 @@ namespace RetEng
 
             // range
             Regex rgx_range = new Regex(all_ranges, RegexOptions.IgnoreCase);
-            MatchCollection rng_matches = rgx_range.Matches(doc_text);
+            MatchCollection rng_matches = rgx_range.Matches(doc_text.ToString());
             mark_as_read(rng_matches);
 
             foreach (Match m in rng_matches)
@@ -371,7 +338,7 @@ namespace RetEng
 
             // numbers
             Regex rgx_numbers = new Regex(numbers, RegexOptions.IgnoreCase);
-            MatchCollection num_matches = rgx_numbers.Matches(doc_text);
+            MatchCollection num_matches = rgx_numbers.Matches(doc_text.ToString());
             mark_as_read(num_matches);
 
             foreach (Match m in num_matches)
@@ -389,7 +356,7 @@ namespace RetEng
             string names = @"[A-Z][a-z]+( [A-Z][a-z]+)+";
 
             Regex rgx_names = new Regex(names);
-            MatchCollection names_matches = rgx_names.Matches(doc_text);
+            MatchCollection names_matches = rgx_names.Matches(doc_text.ToString());
             mark_as_read(names_matches);
 
             foreach (Match m in names_matches)

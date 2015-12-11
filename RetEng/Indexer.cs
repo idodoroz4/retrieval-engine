@@ -13,7 +13,7 @@ namespace RetEng
     class Indexer
     {
         private static object locker;
-        ConcurrentDictionary<string, List<TermInDoc>> cache;
+        ConcurrentDictionary<string, ConcurrentBag<TermInDoc>> cache;
         ConcurrentQueue<string> queue;
         ConcurrentDictionary<string, Posting> main_dic;
         int _cache_size;
@@ -22,7 +22,7 @@ namespace RetEng
         public Indexer(int cache_size, int heap)
         {
             locker = new object();
-            cache = new ConcurrentDictionary<string, List<TermInDoc>>();
+            cache = new ConcurrentDictionary<string, ConcurrentBag<TermInDoc>>();
             queue = new ConcurrentQueue<string>();
             main_dic = new ConcurrentDictionary<string,Posting>();
             _cache_size = cache_size;
@@ -55,12 +55,12 @@ namespace RetEng
             System.IO.File.WriteAllText("main_memory.txt", output);
         }
 
-        private Task write_task(string s, List<TermInDoc> term)
+        private Task write_task(string s, ConcurrentBag<TermInDoc> term)
         {
             return Task.Run(() => { write(s, term); });
         }
 
-        private async void write_async(string s, List<TermInDoc> term)
+        private async void write_async(string s, ConcurrentBag<TermInDoc> term)
         {
             await write_task(s, term);
         }
@@ -69,7 +69,7 @@ namespace RetEng
         {
             foreach (var pair in cache)
             {
-                write(pair.Key, pair.Value);
+                write_async(pair.Key, pair.Value);
             }
         }
         private void add_to_dic(string p, TermInDoc termInDoc)
@@ -92,7 +92,7 @@ namespace RetEng
         }
         private void add_to_cache(string key, TermInDoc term)
         {
-            List<TermInDoc> list = new List<TermInDoc>();
+            ConcurrentBag<TermInDoc> list = new ConcurrentBag<TermInDoc>();
             list.Add(term);
             if (queue.Count < _cache_size)
             {
@@ -101,19 +101,23 @@ namespace RetEng
             else
             {
                 string removal_key;
-                if (queue.TryDequeue(out removal_key))
+                if (queue.TryPeek(out removal_key))
                 {
                     //Thread io = new Thread(() => write(removal_key, cache[removal_key]));
                     //io.Start(); NEED TO CHECK WHETHER THREAD OR TASK IS BETTER!
-                    List<TermInDoc> templist = new List<TermInDoc>(cache[removal_key]);
-                    write_async(removal_key, templist);
+                    
+                    ConcurrentBag<TermInDoc> outt;
+                    cache.TryRemove(removal_key, out outt);
+                    queue.TryDequeue(out removal_key);
+                    write_async(removal_key, outt);
+                    //write_async(removal_key, templist);
                     queue.Enqueue(key);
                 }  
             }
             cache.TryAdd(key, list);   
         }
         
-        private void write(string key, List<TermInDoc> terms)
+        private void write(string key, ConcurrentBag<TermInDoc> terms)
         {
             
             string output;
@@ -121,10 +125,11 @@ namespace RetEng
             if (File.Exists(key + ".txt"))
             {
                 string input_json = System.IO.File.ReadAllText(key + ".txt");
-                List<TermInDoc> list = JsonConvert.DeserializeObject<List<TermInDoc>>(input_json);
-                list.AddRange(terms);
+                ConcurrentBag<TermInDoc> list = JsonConvert.DeserializeObject<ConcurrentBag<TermInDoc>>(input_json);
+                foreach(TermInDoc tid in terms)
+                    list.Add(tid);
+             
                 output = JsonConvert.SerializeObject(list, Formatting.Indented);
-
             }
             else
             {
@@ -136,11 +141,10 @@ namespace RetEng
             {
                 System.IO.File.WriteAllText("_" + key + ".txt", output);
             }
+
+
+
             
-                
-            
-            List<TermInDoc> outt;
-            cache.TryRemove(key,out outt);
         }
 
         

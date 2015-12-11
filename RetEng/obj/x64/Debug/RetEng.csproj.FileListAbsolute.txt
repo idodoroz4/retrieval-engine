@@ -13,3 +13,4 @@ C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Debu
 C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Debug\RetEng.csproj.GenerateResource.Cache
 C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Debug\RetEng.exe
 C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Debug\RetEng.pdb
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Debug\RetEng.csprojResolveAssemblyReference.cache

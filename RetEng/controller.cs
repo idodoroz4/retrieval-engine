@@ -60,33 +60,33 @@ namespace RetEng
                 insertBatch(file);
 
 
-            Task status = Task.Run(() => { read_data(); });
-            for (int i = 0; i < 2; i++)
+            //Task status = Task.Run(() => { read_data(); });
+            /*for (int i = 0; i < 2; i++)
                 readFileAsync();
-            parserAsync();
+            parserAsync();*/
 
-           /* readFileTasks = new Task[num_of_threads_readFile];
-            for (int i=0; i< num_of_threads_readFile; i++)
-            {
-                
-                Task readfile = Task.Run(() => { startReadFile(); });
-                readFileTasks[i] = readfile;
-            }
+            readFileTasks = new Task[num_of_threads_readFile];
+             for (int i=0; i< num_of_threads_readFile; i++)
+             {
 
-            parserTasks = new Task[num_of_threads_Parser];
-            for (int i = 0; i < num_of_threads_Parser; i++)
-            {
-                /*Thread newThread = new Thread(startParser);
-                newThread.Start();
-                Task parser = Task.Run(() => { startParser(); });
-                
-                parserTasks[i] = parser;
-            }*/
+                 Task readfile = Task.Run(() => { startReadFile(); });
+                 readFileTasks[i] = readfile;
+             }
 
-            
+             parserTasks = new Task[num_of_threads_Parser];
+             for (int i = 0; i < num_of_threads_Parser; i++)
+             {
+                 
+                 Task parser = Task.Run(() => { startParser(); });
+
+                 parserTasks[i] = parser;
+             }
+
+
             Task indexer = Task.Run(() => { startindexer(cacheSize, heapSize); });
-            //Task waitReadFile = Task.Run(() => { waitforReadFileProcess(readFileTasks); });    
-            //Task waitParser = Task.Run(() => { waitforparserProcess(parserTasks); });
+            Task waitReadFile = Task.Run(() => { waitforReadFileProcess(readFileTasks); });    
+            Task waitParser = Task.Run(() => { waitforparserProcess(parserTasks); });
+            Task waitIndexer = Task.Run(() => { waitforindexerProcess(indexer); });
 
             Console.WriteLine("done!");
         }
@@ -119,7 +119,7 @@ namespace RetEng
             while (true)
             {
 
-                /*int readFilethreads = 0;
+                int readFilethreads = 0;
                 int parserthreads = 0;
                 foreach (Task t in readFileTasks)
                     if (!t.IsCompleted)
@@ -128,12 +128,20 @@ namespace RetEng
                 foreach (Task t in parserTasks)
                     if (!t.IsCompleted)
                         parserthreads++;
-                */
-                string str = "#Batch: " + batch_files.Count + "\nDocToParse: " + docs_to_parse.Count +
-                   "\nTermAfterParse: " + termAfterParse.Count + "\nReadFileThreads: ";
-                   /*+ readFilethreads + " from " + num_of_threads_readFile +
-                   "\nParserThreads: " + parserthreads + "from" + num_of_threads_Parser;*/
-                Console.WriteLine(str);
+
+                if (!readFileProcessFinished || !parserProcessFinished || !indexerProcessFinished)
+                {
+                    string str = "#Batch: " + batch_files.Count + "\nDocToParse: " + docs_to_parse.Count +
+                       "\nTermAfterParse: " + termAfterParse.Count + "\nReadFileThreads: "
+                       + readFilethreads + " from " + num_of_threads_readFile +
+                       "\nParserThreads: " + parserthreads + " from " + num_of_threads_Parser;
+
+                    Console.WriteLine(str);
+                }
+                else
+                {
+                    Console.WriteLine("done!");
+                }
                 Thread.Sleep(5000);
             }
 
@@ -189,6 +197,7 @@ namespace RetEng
             // After Indexer finished, save memory and cache
             idxr.save_memory();
             idxr.save_cache();
+            Console.WriteLine("finished!!!!");
         }
         private void waitforReadFileProcess(Task[] tasks)
         {
@@ -199,6 +208,12 @@ namespace RetEng
         {
             Task.WaitAll(tasks);
             parserProcessFinished = true;
+        }
+
+        private void waitforindexerProcess(Task tasks)
+        {
+            Task.WaitAll(tasks);
+            indexerProcessFinished = true;
         }
 
 
