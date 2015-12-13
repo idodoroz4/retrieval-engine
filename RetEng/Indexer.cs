@@ -88,7 +88,8 @@ namespace RetEng
         private void promote_queue(string key, TermInDoc term)
         {
              // needs to promote
-                cache[key].Add(term);
+            cache[key].Add(term);
+            main_dic[key].is_popular = true;
         }
         private void add_to_cache(string key, TermInDoc term)
         {
@@ -100,23 +101,34 @@ namespace RetEng
             }
             else
             {
-                string removal_key;
-                if (queue.TryPeek(out removal_key))
+                bool undone = true;
+                while (undone)
                 {
-                    //Thread io = new Thread(() => write(removal_key, cache[removal_key]));
-                    //io.Start(); NEED TO CHECK WHETHER THREAD OR TASK IS BETTER!
-                    
-                    ConcurrentBag<TermInDoc> outt;
-                    cache.TryRemove(removal_key, out outt);
-                    queue.TryDequeue(out removal_key);
-                    write_async(removal_key, outt);
-                    //write_async(removal_key, templist);
-                    queue.Enqueue(key);
-                }  
+                    string removal_key;
+                    if (queue.TryDequeue(out removal_key))
+                    {
+                        if (main_dic[removal_key].is_popular)
+                        {
+                            queue.Enqueue(removal_key);
+                            main_dic[removal_key].is_popular = false;
+                            continue;
+                        }
+                        else
+                            undone = false;
+
+                        //Thread io = new Thread(() => write(removal_key, cache[removal_key]));
+                        //io.Start(); NEED TO CHECK WHETHER THREAD OR TASK IS BETTER!
+
+                        ConcurrentBag<TermInDoc> outt;
+                        cache.TryRemove(removal_key, out outt);
+                        write_async(removal_key, outt);
+                        //write_async(removal_key, templist);
+                        queue.Enqueue(key);
+                    }
+                }
             }
-            cache.TryAdd(key, list);   
+            cache.TryAdd(key, list);
         }
-        
         private void write(string key, ConcurrentBag<TermInDoc> terms)
         {
             
