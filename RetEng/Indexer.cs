@@ -13,8 +13,8 @@ namespace RetEng
     class Indexer
     {
         private static object locker;
-        ConcurrentDictionary<string, ConcurrentBag<TermInDoc>> cache;
-        ConcurrentQueue<string> queue;
+        public ConcurrentDictionary<string, ConcurrentBag<TermInDoc>> cache;
+        public ConcurrentQueue<string> queue;
         ConcurrentDictionary<string, Posting> main_dic;
         int _cache_size;
         int _heap_size;
@@ -69,6 +69,7 @@ namespace RetEng
         {
             foreach (var pair in cache)
             {
+               
                 write_async(pair.Key, pair.Value);
             }
         }
@@ -95,6 +96,7 @@ namespace RetEng
         {
             ConcurrentBag<TermInDoc> list = new ConcurrentBag<TermInDoc>();
             list.Add(term);
+            string removal_key;
             if (queue.Count < _cache_size)
             {
                 queue.Enqueue(key);
@@ -104,7 +106,6 @@ namespace RetEng
                 bool undone = true;
                 while (undone)
                 {
-                    string removal_key;
                     if (queue.TryDequeue(out removal_key))
                     {
                         if (main_dic[removal_key].is_popular)
@@ -148,18 +149,44 @@ namespace RetEng
                 output = JsonConvert.SerializeObject(terms, Formatting.Indented);
             }
 
-
             lock (locker)
             {
+
                 System.IO.File.WriteAllText("_" + key + ".txt", output);
             }
-
-
-
+            
             
         }
 
-        
+        public  void writeCache(string key)
+        {
+            ConcurrentBag<TermInDoc> terms = cache[key];
+            string output;
+
+            if (File.Exists(key + ".txt"))
+            {
+                string input_json = System.IO.File.ReadAllText(key + ".txt");
+                ConcurrentBag<TermInDoc> list = JsonConvert.DeserializeObject<ConcurrentBag<TermInDoc>>(input_json);
+                foreach (TermInDoc tid in terms)
+                    list.Add(tid);
+
+                output = JsonConvert.SerializeObject(list, Formatting.Indented);
+            }
+            else
+            {
+                output = JsonConvert.SerializeObject(terms, Formatting.Indented);
+            }
+
+            System.IO.File.WriteAllText("_" + key + ".txt", output);
+            
+
+            ConcurrentBag<TermInDoc> outt;
+            cache.TryRemove(key, out outt);
+
+
+        }
+
+
     }
 
 }

@@ -32,6 +32,8 @@ namespace RetEng
 
             termDic = new Dictionary<string, TermInDoc>();
             doc_text = new StringBuilder(doc.text);
+            //doc_text.Replace("\"", "");
+
             doc_title = new StringBuilder(doc.title);
             doc_date = doc.date;
             doc_id = doc.id;
@@ -39,8 +41,11 @@ namespace RetEng
             doc_offset = doc.doc_idx;
 
             dates_parse(doc_text.ToString());
-            names_parse();
             numbers_parse();
+
+            replace_chars();
+
+            names_parse();
 
             remove_stopwords_text();
             remove_stopwords_title();
@@ -52,23 +57,128 @@ namespace RetEng
             return termDic;
 
         }
+
+        private void replace_chars()
+        {
+            for (int i=0; i< doc_text.Length; i++)
+            {
+
+                switch (doc_text[i])
+                {
+                    case '/':
+                        doc_text[i] = ' ';
+                        break;
+                    case ':':
+                        doc_text[i] = '\0';
+                        break;
+                    case '"':
+                        doc_text[i] = '\0';
+                        break;
+                    case '*':
+                        doc_text[i] = '\0';
+                        break;
+                    case '?':
+                        doc_text[i] = '\0';
+                        break;
+                    case '>':
+                        doc_text[i] = '\0';
+                        break;
+                    case '<':
+                        doc_text[i] = '\0';
+                        break;
+                    case '|':
+                        doc_text[i] = '\0';
+                        break;
+                    case '(':
+                        doc_text[i] = '\0';
+                        break;
+                    case ')':
+                        doc_text[i] = '\0';
+                        break;
+                    case ']':
+                        doc_text[i] = '\0';
+                        break;
+                    case '[':
+                        doc_text[i] = '\0';
+                        break;
+                }
+            }
+
+            doc_text.Replace("\0", "");
+            for (int i = 0; i < doc_title.Length; i++)
+            {
+
+                switch (doc_title[i])
+                {
+                    case '/':
+                        doc_title[i] = ' ';
+                        break;
+                    case ':':
+                        doc_title[i] = '\0';
+                        break;
+                    case '"':
+                        doc_title[i] = '\0';
+                        break;
+                    case '*':
+                        doc_title[i] = '\0';
+                        break;
+                    case '?':
+                        doc_title[i] = '\0';
+                        break;
+                    case '>':
+                        doc_title[i] = '\0';
+                        break;
+                    case '<':
+                        doc_title[i] = '\0';
+                        break;
+                    case '|':
+                        doc_title[i] = '\0';
+                        break;
+                    case '(':
+                        doc_title[i] = '\0';
+                        break;
+                    case ')':
+                        doc_title[i] = '\0';
+                        break;
+                    case ']':
+                        doc_title[i] = '\0';
+                        break;
+                    case '[':
+                        doc_title[i] = '\0';
+                        break;
+                }
+            }
+            doc_title.Replace("\0", "");
+        }
         private void remove_stopwords_text()
         {
-            List<string> words = doc_text.ToString().Split(null).ToList();
-            foreach (string sw in words)
-                if (stopword.is_stopword(sw))
-                    doc_text.Replace(sw, create_nulls(sw.Length));
-            
-               
+            StringBuilder sb = new StringBuilder();
+            string[] words = doc_text.ToString().Split(new char[0] , StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (!stopword.is_stopword(words[i]))
+                {
+                    sb.Append(" " + words[i]);
 
-        }
+                }
+            }
+           
+
+            doc_text = sb;
+           
+       }
         private void remove_stopwords_title()
         {
-            List<string> words = doc_title.ToString().Split(null).ToList();
-            foreach (string sw in words)
-                if (stopword.is_stopword(sw))
-                    doc_title.Replace(sw, create_nulls(sw.Length));
-            
+            StringBuilder sb = new StringBuilder();
+            string[] words = doc_title.ToString().Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (!stopword.is_stopword(words[i]))
+                    sb.Append(" " + words[i]);
+            }
+
+            doc_title = sb;
+
         }
 
         private short month_str_to_short(string month) // convert month name to short variable
@@ -150,13 +260,25 @@ namespace RetEng
             Regex rgx = new Regex(pattern, RegexOptions.IgnoreCase);
             return rgx.IsMatch(input);   
         }
+
+        private void Remove_string(MatchCollection matches)
+        {
+            foreach (Match m in matches)
+            {
+                doc_text.Replace(m.Value, "");
+            }
+        }
         private void mark_as_read(MatchCollection matches) 
             // change the text that matched to a regex to '#'s , so it won't match to another regex.
         {
             foreach (Match m in matches)
             {
-                doc_text.Replace(m.Value, create_nulls(m.Length), m.Index, m.Length);
-                
+                if (m.Value[0] == ' ')
+                    doc_text.Replace(m.Value.Trim(), create_nulls(m.Length - 1), m.Index + 1, m.Length - 1);
+                else
+                    doc_text.Replace(m.Value, create_nulls(m.Length), m.Index, m.Length);
+
+
                 //doc_text = doc_text.Replace(m.Value, create_nulls(m.Value.Length));
                 /*string before_match = doc_text.Substring(0, m.Index);
                 string after_match = doc_text.Substring(m.Index + m.Length);
@@ -197,8 +319,7 @@ namespace RetEng
             {
                 if (num.Contains(' '))
                 {
-                    string[] str = num.Split(null);
-                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    string[] str = num.Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
                     double coefficient = double.Parse(str[0]);
                     string[] str2 = str[1].Split('/');
                     double numinator = double.Parse(str2[0]);
@@ -220,6 +341,18 @@ namespace RetEng
 
         private char big_number_identifier(string num)
         {
+            
+            if (num.IndexOf("m") != -1 || num.IndexOf("M") != -1)
+                return 'm';
+            if (num.IndexOf("h") != -1 || num.IndexOf("H") != -1)
+                return 'h';
+            if (num.IndexOf("t") != -1 || num.IndexOf("T") != -1)
+                return 't';
+            if (num.IndexOf("b") != -1 || num.IndexOf("B") != -1)
+                return 'b';
+
+            return 'n'; // normal
+            /*
             string regular_num = @"\d+";
             string non_rational_num = @"\d+\.\d+";
             string rational_num = @"(\d+\s+)?\d+/\d+";
@@ -243,21 +376,29 @@ namespace RetEng
                 return 'b';
             if (tril != null)
                 return 't';
-
+                
             return 'n';
+            */
 
         }
 
         private void regular_words_parse_text()
         {
-
+            string x = doc_text.ToString();
+            string[] words = doc_text.ToString().Split(new char[0] ,StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i< words.Length; i++)
+            {
+                if (words[i].IndexOf('#') == -1)
+                    add_to_dic(stem.stemTerm(words[i]), 5 * i, false);
+            }
+            /*
             string pattern = @"[a-z]+([-'][a-z]+)?";
             Regex rgx_anyWord = new Regex(pattern, RegexOptions.IgnoreCase);
             MatchCollection matches = rgx_anyWord.Matches(doc_text.ToString());
 
             foreach (Match m in matches)
                 add_to_dic(stem.stemTerm(m.Value), m.Index, false);
-            
+            */
             
         }
         private void regular_words_parse_title()
@@ -326,7 +467,7 @@ namespace RetEng
             MatchCollection rng_matches = rgx_range.Matches(doc_text.ToString());
             mark_as_read(rng_matches);
 
-            foreach (Match m in rng_matches)
+            foreach (Match m in rng_matches) // may change
             {
                 Regex rgx = new Regex(all_num_formats, RegexOptions.IgnoreCase);
                 MatchCollection nums_in_ranges = rgx.Matches(m.Value);
@@ -352,6 +493,45 @@ namespace RetEng
         private void names_parse() // parse the names 
             //checked
         {
+            StringBuilder sb = new StringBuilder();
+            StringBuilder temp = new StringBuilder();
+            string[] words = doc_text.ToString().Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
+            //Array.Sort(words);
+            //List<string> lii = words.ToList<string>();
+            //lii.Sort();
+            for (int i = 0; i < words.Length; i++)
+            {
+
+                int count = 0;
+                while (Char.IsUpper(words[i][0] ))
+                {
+                    if (words[i].Length > 1)
+                        if (Char.IsUpper(words[i][1]))
+                            break;
+                    count++;
+                    
+                    temp.Append(words[i] + " " );
+                    i++;
+                    
+                    if (words.Length == i || count == 7)
+                        break;
+                }
+                if (count >= 2 )
+                {
+                    add_to_dic(temp.ToString(), i * 5, false);
+                }
+                else if (words.Length > i)
+                {
+                    sb.Append(words[i] + " " );
+                }
+
+                temp.Clear();
+
+
+            }
+
+            doc_text = sb;
+            /*
             //names
             string names = @"[A-Z][a-z]+( [A-Z][a-z]+)+";
 
@@ -363,7 +543,7 @@ namespace RetEng
             {
                 Name name = new Name(m.Value);
                 add_to_dic(name.ToString(), m.Index, false);
-            }
+            }*/
         }
 
 
@@ -400,53 +580,46 @@ namespace RetEng
             {
                 if (is_matched(date_format_1, m.Value))
                 {
-                    string[] str = m.Value.Split(' ');
-                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    string[] str = m.Value.Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
                     Date d = new Date(short.Parse(str[0]),month_str_to_short((str[1])),short.Parse(str[2]));
                     add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_2, m.Value))
                 {
-                    string[] str = m.Value.Split(null);
-                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    string[] str = m.Value.Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
                     string day = str[0].Replace("th", "");
                     Date d = new Date(short.Parse(day), month_str_to_short(str[1]), short.Parse(str[2]));
                     add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_3, m.Value)){
-                    string[] str = m.Value.Split(null);
-                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    string[] str = m.Value.Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
                     string year = "19" + str[2];
                     Date d = new Date(short.Parse(str[0]), month_str_to_short(str[1]), short.Parse(year));
                     add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_4, m.Value))
                 {
-                    string[] str = m.Value.Split(null);
-                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    string[] str = m.Value.Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
                     Date d = new Date(short.Parse(str[0]), month_str_to_short(str[1]), 0);
                     add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_7, m.Value))
                 {
                     string[] str1 = m.Value.Split(',');
-                    string[] str2 = str1[0].Split(null);
-                    str2 = str2.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    string[] str2 = str1[0].Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
                     string year = str1[1].Trim();
                     Date d = new Date(short.Parse(str2[1]), month_str_to_short(str2[0]), short.Parse(year));
                     add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_6, m.Value))
                 {
-                    string[] str = m.Value.Split(null);
-                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    string[] str = m.Value.Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
                     Date d = new Date(1, month_str_to_short(str[0]), short.Parse(str[1]));
                     add_to_dic(d.ToString(), m.Index, false);
                 }
                 else if (is_matched(date_format_8, m.Value))
                 {
-                    string[] str = m.Value.Split(null);
-                    str = str.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    string[] str = m.Value.Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
                     Date d = new Date(short.Parse(str[1]), month_str_to_short(str[0]), 0);
                     add_to_dic(d.ToString(), m.Index, false);
                 }

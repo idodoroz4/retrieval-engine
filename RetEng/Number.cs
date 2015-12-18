@@ -32,7 +32,28 @@ namespace RetEng
         }
         public override string ToString()
         {
-            return _value.ToString();
+            string b = _value.ToString();
+            if (_is_percent)
+                b = b + '%';
+            if (_is_price)
+                b = '$' + b;
+
+            switch (_multi)
+            {
+                case 'h':
+                    b = b + " hundreds";
+                    break;
+                case 'm':
+                    b = b + " million";
+                    break;
+                case 't':
+                    b = b + " trillion";
+                    break;
+                case 'b':
+                    b = b + " billion";
+                    break;
+            }
+            return b;
         }
     }
 }

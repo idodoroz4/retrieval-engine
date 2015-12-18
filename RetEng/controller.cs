@@ -17,7 +17,6 @@ namespace RetEng
         private ConcurrentDictionary<string, int> num_of_terms_in_doc;
         private int num_of_threads_readFile;
         private int num_of_threads_Parser;
-        private int num_of_threads_indexer;
         public bool readFileProcessFinished { get; private set; }
         public bool parserProcessFinished { get; private set; }
         public bool indexerProcessFinished { get; private set; }
@@ -27,16 +26,20 @@ namespace RetEng
         private Task[] readFileTasks;
         private Task[] parserTasks;
 
+        private Indexer idxr;
+
         public Controller(int cache_size, int heap_size)
         {
             batch_files = new ConcurrentQueue<string>();
             docs_to_parse = new ConcurrentQueue<Document>();
             termAfterParse = new ConcurrentQueue<Dictionary<string, TermInDoc>>();
             num_of_terms_in_doc = new ConcurrentDictionary<string, int>();
-            
-            num_of_threads_readFile = 4;
+
+            idxr = new Indexer(cache_size, heap_size);
+
+            num_of_threads_readFile = 6;
             num_of_threads_Parser = 8;
-            num_of_threads_indexer = 1;
+            
 
             readFileProcessFinished = false;
             parserProcessFinished = false;
@@ -60,12 +63,12 @@ namespace RetEng
                 insertBatch(file);
 
 
-            //Task status = Task.Run(() => { read_data(); });
+            Task status = Task.Run(() => { read_data(); });
             /*for (int i = 0; i < 2; i++)
                 readFileAsync();
             parserAsync();*/
 
-            readFileTasks = new Task[num_of_threads_readFile];
+             readFileTasks = new Task[num_of_threads_readFile];
              for (int i=0; i< num_of_threads_readFile; i++)
              {
 
@@ -78,7 +81,6 @@ namespace RetEng
              {
                  
                  Task parser = Task.Run(() => { startParser(); });
-
                  parserTasks[i] = parser;
              }
 
@@ -90,6 +92,7 @@ namespace RetEng
 
             Console.WriteLine("done!");
         }
+
 
         private Task readFileTask()
         {
@@ -129,18 +132,19 @@ namespace RetEng
                     if (!t.IsCompleted)
                         parserthreads++;
 
-                if (!readFileProcessFinished || !parserProcessFinished || !indexerProcessFinished)
+                if (!readFileProcessFinished || !parserProcessFinished || !indexerProcessFinished || idxr.cache.Count > 0)
                 {
                     string str = "#Batch: " + batch_files.Count + "\nDocToParse: " + docs_to_parse.Count +
                        "\nTermAfterParse: " + termAfterParse.Count + "\nReadFileThreads: "
                        + readFilethreads + " from " + num_of_threads_readFile +
-                       "\nParserThreads: " + parserthreads + " from " + num_of_threads_Parser;
+                       "\nParserThreads: " + parserthreads + " from " + num_of_threads_Parser +
+                       "\ncacheSize: " + idxr.cache.Count;
 
                     Console.WriteLine(str);
                 }
                 else
                 {
-                    Console.WriteLine("done!");
+                    break;
                 }
                 Thread.Sleep(5000);
             }
@@ -183,7 +187,7 @@ namespace RetEng
 
         private void startindexer(int cache_size, int heap_size)
         {
-            Indexer idxr = new Indexer(cache_size, heap_size);
+            
             Dictionary<string, TermInDoc> dicTerm;
             while (!parserProcessFinished || !termAfterParse.IsEmpty)
             {
@@ -196,8 +200,24 @@ namespace RetEng
             }
             // After Indexer finished, save memory and cache
             idxr.save_memory();
-            idxr.save_cache();
+            Task[] saveCacheTasks = new Task[6];
+            for (int i = 0; i < 6; i++)
+            {
+                Task saveCache = Task.Run(() => { startSavingCache(); });
+                saveCacheTasks[i] = saveCache;
+            }
             Console.WriteLine("finished!!!!");
+        }
+
+        private void startSavingCache()
+        {
+            while (idxr.queue.Count > 0)
+            {
+                string key;
+                idxr.queue.TryDequeue(out key);
+                idxr.writeCache(key);
+
+            }
         }
         private void waitforReadFileProcess(Task[] tasks)
         {

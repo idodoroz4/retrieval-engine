@@ -17,15 +17,18 @@ namespace RetEng
             int offset = 0;
            // string text = System.IO.File.ReadAllText(file_path);
             StringBuilder str = new StringBuilder(System.IO.File.ReadAllText(file_path));
-            while (str.Length > 0)
+            while (str.Length > 100)
             {
                 int doc_idx_start2 = indexOf(str, "<DOC>");
+                if (doc_idx_start2 == -1)
+                    break;
                 int doc_idx_end2 = indexOf(str, "</DOC>");
                 string single_doc2 = str.ToString(doc_idx_start2 + 6, doc_idx_end2 - (doc_idx_start2 + 6));
                 Document doc = new Document(single_doc2, offset, file_path);
                 offset = doc_idx_end2 + 2;
                 my_batch.Add(doc);
-                str.Remove(doc_idx_start2, doc_idx_end2 + 6);
+                string x = str.ToString();
+                str.Remove(doc_idx_start2, doc_idx_end2 + 6 - doc_idx_start2);
                 /*
                 int doc_idx_start = text.IndexOf("<DOC>", 0);
                 int doc_idx_end = text.IndexOf("</DOC>");

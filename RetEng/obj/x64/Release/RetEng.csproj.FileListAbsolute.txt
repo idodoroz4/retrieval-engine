@@ -1,0 +1,15 @@
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\bin\x64\Release\RetEng.exe.config
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\bin\x64\Release\RetEng.exe
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\bin\x64\Release\RetEng.pdb
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\bin\x64\Release\Newtonsoft.Json.dll
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\bin\x64\Release\Newtonsoft.Json.xml
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Release\MainWindow.g.cs
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Release\App.g.cs
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Release\RetEng_MarkupCompile.cache
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Release\RetEng_MarkupCompile.lref
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Release\MainWindow.baml
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Release\RetEng.g.resources
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Release\RetEng.Properties.Resources.resources
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Release\RetEng.csproj.GenerateResource.Cache
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Release\RetEng.exe
+C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\obj\x64\Release\RetEng.pdb
