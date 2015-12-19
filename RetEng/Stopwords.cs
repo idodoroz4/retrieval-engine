@@ -9,13 +9,12 @@ namespace RetEng
 {
     public class Stopwords
     {
-        private string stopword_file_path = @"Resources\stop_words.txt";
         public Dictionary<string, bool> swDic;
 
-        public Stopwords()
+        public Stopwords(string path)
         {
             swDic = new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase);
-            foreach (string line in File.ReadLines(stopword_file_path))
+            foreach (string line in File.ReadLines(path + "\\stop_words.txt"))
                 if (!(swDic.ContainsKey(line)))
                     swDic.Add(line, true);
         }

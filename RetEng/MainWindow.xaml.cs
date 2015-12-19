@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Windows.Forms;
 using System.Threading;
 
 namespace RetEng
@@ -23,31 +24,15 @@ namespace RetEng
     /// </summary>
     public partial class MainWindow : Window
     {
+        Controller ctrl;
         public MainWindow()
         {
             InitializeComponent();
-
-            int cache_size = 20000;
-            int heap_size = 50;
-            delete_all_textFiles();
-            Console.WriteLine();
-            Controller ctrl = new Controller(cache_size,heap_size);
-            //Thread t = new Thread(() => read_data(ctrl));
             
-            ctrl.initiate();
-            //t.Start();
 
 
 
-        }
-        private void read_data(Controller c)
-        {
-            while (true)
-            {
-                textBox.Text = c.data();
-                Thread.Sleep(5000);
-            }
-            
+
         }
         private void delete_all_textFiles()
         {
@@ -73,6 +58,66 @@ namespace RetEng
 
             Console.WriteLine();
         }
-       
+
+        private void choose_batch_path_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            DialogResult result = fbd.ShowDialog();
+
+            batch_path.Text = fbd.SelectedPath;
+        }
+
+        private void choose_posting_path_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            DialogResult result = fbd.ShowDialog();
+
+            posting_path.Text = fbd.SelectedPath;
+        }
+
+        private void start_btn_Click(object sender, RoutedEventArgs e)
+        {
+            int cache_size = 20 * 1000;
+            int heap_size = 50;
+            int numOfTermsInPosting = 10 * 1000;
+            delete_all_textFiles();
+            Console.WriteLine();
+            ctrl = new Controller(cache_size, heap_size, numOfTermsInPosting, batch_path.Text, posting_path.Text,stem_cbx.IsChecked.Value);
+
+            ctrl.initiate();
+   
+        }
+
+        private void reset_btn_Click(object sender, RoutedEventArgs e)
+        {
+            // ctrl.reset_dics();
+            //string directoryPath = @"C:\test\";
+            string extension = "*.txt";
+            /*if (!Directory.Exists(directoryPath))
+                return;*/
+
+            DirectoryInfo di = new DirectoryInfo(posting_path.Text);
+            FileInfo[] files = di.GetFiles(extension).Where(p => p.Extension.ToLowerInvariant() == ".txt").ToArray();
+            foreach (FileInfo file in files)
+            {
+                file.Attributes = FileAttributes.Normal;
+                File.Delete(file.FullName);
+            }
+        }
+
+        private void load_if_btn_Click(object sender, RoutedEventArgs e)
+        {
+            ctrl = new Controller(0, 0, 0, batch_path.Text, posting_path.Text, stem_cbx.IsChecked.Value);
+            ctrl.load_memory();
+        }
+
+        private void show_if_btn_Click(object sender, RoutedEventArgs e)
+        {
+            
+            show_memory win = new show_memory();
+            win.Show();
+            win.memory_txt.Text = ctrl.show_memory();
+
+        }
     }
 }

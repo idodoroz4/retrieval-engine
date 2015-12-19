@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,11 +21,18 @@ namespace RetEng
         int doc_offset;
         Stemmer stem;
         Stopwords stopword;
+        string Term_maxTF;
+        int maxTF;
+        bool _is_stemming;
 
-        public Parser()
+        public Parser(string stopwords_path,bool stems)
         {
-            stopword = new Stopwords();
+            
+            stopword = new Stopwords(stopwords_path);
+           
             stem = new Stemmer();
+            maxTF = 0;
+            _is_stemming = stems;
         }
 
         public Dictionary<string,TermInDoc> parse_doc (Document doc) 
@@ -42,10 +50,9 @@ namespace RetEng
 
             dates_parse(doc_text.ToString());
             numbers_parse();
+            names_parse();
 
             replace_chars();
-
-            names_parse();
 
             remove_stopwords_text();
             remove_stopwords_title();
@@ -53,7 +60,7 @@ namespace RetEng
             regular_words_parse_text();
             regular_words_parse_title();
 
-
+            
             return termDic;
 
         }
@@ -101,6 +108,22 @@ namespace RetEng
                     case '[':
                         doc_text[i] = '\0';
                         break;
+                    case '.':
+                        doc_text[i] = '\0';
+                        break;
+                    case ',':
+                        doc_text[i] = '\0';
+                        break;
+                    case '\'':
+                        doc_text[i] = '\0';
+                        break;
+                    case '`':
+                        doc_text[i] = '\0';
+                        break;
+                    case ';':
+                        doc_text[i] = '\0';
+                        break;
+
                 }
             }
 
@@ -145,6 +168,21 @@ namespace RetEng
                         break;
                     case '[':
                         doc_title[i] = '\0';
+                        break;
+                    case '.':
+                        doc_text[i] = '\0';
+                        break;
+                    case ',':
+                        doc_text[i] = '\0';
+                        break;
+                    case '\'':
+                        doc_text[i] = '\0';
+                        break;
+                    case '`':
+                        doc_text[i] = '\0';
+                        break;
+                    case ';':
+                        doc_text[i] = '\0';
                         break;
                 }
             }
@@ -238,7 +276,7 @@ namespace RetEng
         {
             if (termDic.ContainsKey(str))
             {
-                termDic[str]._ocurrences_in_doc++;
+                termDic[str]._tf++;
                 termDic[str]._positions.Add(pos);
                 termDic[str]._is_in_headline = is_in_head;
             }
@@ -247,9 +285,10 @@ namespace RetEng
                 termDic.Add(str, new TermInDoc(doc_id,batch_id));
                 termDic[str]._positions.Add(pos);
                 termDic[str]._doc_id = doc_id;
-                termDic[str]._ocurrences_in_doc++;
+                termDic[str]._tf++;
                 termDic[str]._is_in_headline = is_in_head;
             }
+           
         }
 
         private bool is_matched(string pattern,string input) 
@@ -314,9 +353,10 @@ namespace RetEng
                 return double.Parse(new Regex(all_num_formats, RegexOptions.IgnoreCase).Match(no_commas).Value);
             }
 
-
+            
             else if (rgx_numbers2.IsMatch(num))
             {
+                num = rgx_numbers2.Match(num).ToString();
                 if (num.Contains(' '))
                 {
                     string[] str = num.Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
@@ -389,7 +429,10 @@ namespace RetEng
             for (int i = 0; i< words.Length; i++)
             {
                 if (words[i].IndexOf('#') == -1)
-                    add_to_dic(stem.stemTerm(words[i]), 5 * i, false);
+                    if (_is_stemming)
+                        add_to_dic(stem.stemTerm(words[i]), 5 * i, false);
+                    else
+                        add_to_dic(words[i], 5 * i, false);
             }
             /*
             string pattern = @"[a-z]+([-'][a-z]+)?";
@@ -409,7 +452,10 @@ namespace RetEng
             MatchCollection matches = rgx_anyWord.Matches(doc_title.ToString());
 
             foreach (Match m in matches)
-                add_to_dic(stem.stemTerm(m.Value), m.Index, true);
+                if (_is_stemming)
+                    add_to_dic(stem.stemTerm(m.Value), m.Index, true);
+                else
+                    add_to_dic(m.Value, m.Index, true);
 
 
         }
@@ -501,7 +547,11 @@ namespace RetEng
             //lii.Sort();
             for (int i = 0; i < words.Length; i++)
             {
-
+                if (words[i][0] == '"' && words[i][words[i].Length - 1] == '"')
+                {
+                   add_to_dic(words[i], i * 5, false);
+                   continue;
+                }
                 int count = 0;
                 while (Char.IsUpper(words[i][0] ))
                 {

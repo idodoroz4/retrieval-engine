@@ -6,8 +6,17 @@
         xmlns:local="clr-namespace:RetEng"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="47" Margin="116,115,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="110"/>
+    <Grid Margin="0,0,-0.333,-5.333">
+        <TextBox x:Name="batch_path" HorizontalAlignment="Left" Height="23" Margin="185,53,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="273"/>
+        <Button x:Name="choose_batch_path" Content="choose batch Path" HorizontalAlignment="Left" Margin="37,53,0,0" VerticalAlignment="Top" Width="138" Click="choose_batch_path_Click" Height="23"/>
+        <TextBox x:Name="posting_path" HorizontalAlignment="Left" Height="23" Margin="185,92,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="273"/>
+        <Button x:Name="choose_posting_path" Content="choose Posting Path" HorizontalAlignment="Left" Margin="37,92,0,0" VerticalAlignment="Top" Width="138" Height="23" Click="choose_posting_path_Click"/>
+        <CheckBox x:Name="stem_cbx" Content="stemming" HorizontalAlignment="Left" Margin="37,137,0,0" VerticalAlignment="Top" IsChecked="True"/>
+        <CheckBox x:Name="both_cbx" Content="Stemming + not stemming" HorizontalAlignment="Left" Margin="37,168,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="start_btn" Content="Start" HorizontalAlignment="Left" Height="45" Margin="116,264,0,0" VerticalAlignment="Top" Width="117" Click="start_btn_Click"/>
+        <Button x:Name="reset_btn" Content="RESET" HorizontalAlignment="Left" Height="45" Margin="272,264,0,0" VerticalAlignment="Top" Width="119" Click="reset_btn_Click"/>
+        <Button x:Name="load_if_btn" Content="load inverted files" HorizontalAlignment="Left" Height="24" Margin="114,198,0,0" VerticalAlignment="Top" Width="119" Click="load_if_btn_Click"/>
+        <Button x:Name="show_if_btn" Content="Show Inverted files" HorizontalAlignment="Left" Height="24" Margin="272,198,0,0" VerticalAlignment="Top" Width="119" Click="show_if_btn_Click"/>
 
     </Grid>
 </Window>
