@@ -17,7 +17,7 @@ First, the text files parsed to terms, and then the engine index it, <br>
 The engine support multiple text files, each text file can contain multiple Docs. <br>
  Each doc needs to be like the following format:<br>
  ```xml
-<DOC><br>
+<DOC>
 	<DOCNO>
 		Doc ID
 	</DOCNO>
