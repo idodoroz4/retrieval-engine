@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace RetEng
 {
+     // Represent a number term, can be precent/dollar and be in size (M/T/H)
     class Number : Term
     {
         public bool _is_percent { get; private set; }

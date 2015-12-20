@@ -7,7 +7,8 @@ using System.IO;
 
 namespace RetEng
 {
-    class ReadFile
+    //Read the files, and parse it to docs, and then the Parser can parse doc itself
+    public class ReadFile
     {
         public List<Document> get_docs(string file_path)
         {

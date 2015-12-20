@@ -6,20 +6,17 @@
         xmlns:local="clr-namespace:RetEng"
         mc:Ignorable="d"
         Title="show_memory" Height="300" Width="300">
-    <Grid Margin="-233,-98,0.333,-0.333">
+    <Grid Margin="-233,-98,0.2,-0.2" RenderTransformOrigin="0.352,0.424">
         <Grid.RowDefinitions>
             <RowDefinition Height="0*"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <TextBox x:Name="memory_txt" HorizontalAlignment="Left" Height="298" Margin="230,76,-3,-5.333" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="299" RenderTransformOrigin="0.5,0.5" Grid.RowSpan="2">
-            <TextBox.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="0.173"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </TextBox.RenderTransform>
-        </TextBox>
+        <RichTextBox x:Name="memory_txt" HorizontalAlignment="Left" Height="294" Margin="230,77,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Width="288">
+            <FlowDocument>
+                <Paragraph>
+                    <Run Text="RichTextBox"/>
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
     </Grid>
 </Window>

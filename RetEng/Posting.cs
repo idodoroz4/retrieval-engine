@@ -6,7 +6,8 @@ using System.Text;
 
 namespace RetEng
 {
-    class Posting
+    // Represent the link to the posting file, saved on the inverted files
+    public class Posting
     {
         public int df;
         public bool is_popular;

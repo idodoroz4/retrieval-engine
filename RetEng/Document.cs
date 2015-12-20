@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace RetEng
 {
-    class Document
+    // Represents a document after parsing. 
+    public class Document
     {
         public string id { get; private set; }
         public string date { get; private set; }

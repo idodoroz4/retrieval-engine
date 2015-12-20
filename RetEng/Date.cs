@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace RetEng
 {
-    class Date : Term
+    // A class which  represent date term
+    public class Date : Term
     {
         private short _year;
         private short _month;

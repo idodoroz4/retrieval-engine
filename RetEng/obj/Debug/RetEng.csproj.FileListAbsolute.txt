@@ -13,7 +13,6 @@ C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\Re
 C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.csproj.GenerateResource.Cache
 C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.exe
 C:\Users\tsvika\Documents\Visual Studio 2015\Projects\RetEng\RetEng\obj\Debug\RetEng.pdb
-C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng.csprojResolveAssemblyReference.cache
 C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\MainWindow.g.cs
 C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\App.g.cs
 C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng_MarkupCompile.cache
@@ -30,3 +29,6 @@ C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine
 C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\bin\Debug\Newtonsoft.Json.xml
 C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\bin\Debug\Newtonsoft.Json.dll
 C:\Users\tsvika\documents\visual studio 2015\Projects\RetEng\RetEng\bin\Debug\Newtonsoft.Json.xml
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\show_memory.g.cs
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\show_memory.baml
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Debug\RetEng.csprojResolveAssemblyReference.cache

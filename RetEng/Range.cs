@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace RetEng
 {
+    // represent range term
     class Range : Term
     {
         public Number _first_num { get; private set; }

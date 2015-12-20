@@ -19,9 +19,13 @@ namespace RetEng
     /// </summary>
     public partial class show_memory : Window
     {
-        public show_memory()
+        Controller _ctrl;
+        public show_memory(Controller ctrl)
         {
+            _ctrl = ctrl;
             InitializeComponent();
         }
+
+   
     }
 }

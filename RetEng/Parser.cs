@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace RetEng
 {
-    class Parser
+    // class that presents a Parser to the Docs files, using rules.
+   public class Parser
     {
         Dictionary<string, TermInDoc> termDic;
         
@@ -21,17 +22,13 @@ namespace RetEng
         int doc_offset;
         Stemmer stem;
         Stopwords stopword;
-        string Term_maxTF;
-        int maxTF;
         bool _is_stemming;
 
         public Parser(string stopwords_path,bool stems)
         {
             
             stopword = new Stopwords(stopwords_path);
-           
             stem = new Stemmer();
-            maxTF = 0;
             _is_stemming = stems;
         }
 
@@ -40,31 +37,24 @@ namespace RetEng
 
             termDic = new Dictionary<string, TermInDoc>();
             doc_text = new StringBuilder(doc.text);
-            //doc_text.Replace("\"", "");
-
             doc_title = new StringBuilder(doc.title);
             doc_date = doc.date;
             doc_id = doc.id;
             batch_id = doc.batch_id;
             doc_offset = doc.doc_idx;
-
             dates_parse(doc_text.ToString());
             numbers_parse();
-            names_parse();
-
             replace_chars();
-
+            names_parse();
             remove_stopwords_text();
             remove_stopwords_title();
-
             regular_words_parse_text();
             regular_words_parse_title();
-
-            
+      
             return termDic;
 
         }
-
+       // Replcaing non alpha numeric and un importent characters;
         private void replace_chars()
         {
             for (int i=0; i< doc_text.Length; i++)
@@ -76,58 +66,69 @@ namespace RetEng
                         doc_text[i] = ' ';
                         break;
                     case ':':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '"':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '*':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '?':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '>':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '<':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '|':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '(':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case ')':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case ']':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '[':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '.':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case ',':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '\'':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '`':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case ';':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
+                        break;
+                    case '-':
+                        doc_text[i] = ' ';
+                        break;
+                    case '!':
+                        doc_text[i] = ' ';
+                        break;
+                    case '$':
+                        doc_text[i] = ' ';
+                        break;        
+                    case '�':
+                        doc_text[i] = ' ';
                         break;
 
                 }
             }
 
-            doc_text.Replace("\0", "");
             for (int i = 0; i < doc_title.Length; i++)
             {
 
@@ -137,57 +138,72 @@ namespace RetEng
                         doc_title[i] = ' ';
                         break;
                     case ':':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case '"':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case '*':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case '?':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case '>':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case '<':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case '|':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case '(':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case ')':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case ']':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case '[':
-                        doc_title[i] = '\0';
+                        doc_title[i] = ' ';
                         break;
                     case '.':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case ',':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '\'':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case '`':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
                     case ';':
-                        doc_text[i] = '\0';
+                        doc_text[i] = ' ';
                         break;
+                    case '-':
+                        doc_text[i] = ' ';
+                        break;
+                    case '!':
+                        doc_text[i] = ' ';
+                        break;
+                    case '$':
+                        doc_text[i] = ' ';
+                        break;
+                    case '�':
+                        doc_text[i] = ' ';
+                        break;
+
+                        
                 }
             }
-            doc_title.Replace("\0", "");
+      
         }
+       // Remove stop words from the text
         private void remove_stopwords_text()
         {
             StringBuilder sb = new StringBuilder();
@@ -205,6 +221,7 @@ namespace RetEng
             doc_text = sb;
            
        }
+        // Remove stop words from the title
         private void remove_stopwords_title()
         {
             StringBuilder sb = new StringBuilder();
@@ -218,8 +235,8 @@ namespace RetEng
             doc_title = sb;
 
         }
-
-        private short month_str_to_short(string month) // convert month name to short variable
+        // convert month name to short variable
+        private short month_str_to_short(string month) 
         {
             if ((String.Compare(month, "January", StringComparison.OrdinalIgnoreCase) == 0) ||
                 (String.Compare(month, "jan", StringComparison.OrdinalIgnoreCase) == 0))
@@ -271,7 +288,7 @@ namespace RetEng
             return 0;
 
         }
-
+       // Adding term to the Dictionary
         private void add_to_dic(string str,int pos,bool is_in_head)
         {
             if (termDic.ContainsKey(str))
@@ -290,11 +307,11 @@ namespace RetEng
             }
            
         }
-
+        // checks the pattern of the string, return true if it is the pattern and else otherwise
+        // the function is is needed to deremine how the data is presented,so we can know how to store it in the Term object
+        // for example: date- "31 May 1978" or "May 31, 1978"
         private bool is_matched(string pattern,string input) 
-            // checks the pattern of the string, return true if it is the pattern and else otherwise
-            // the function is is needed to deremine how the data is presented,so we can know how to store it in the Term object
-            // for example: date- "31 May 1978" or "May 31, 1978"
+
         {
             Regex rgx = new Regex(pattern, RegexOptions.IgnoreCase);
             return rgx.IsMatch(input);   
@@ -307,8 +324,9 @@ namespace RetEng
                 doc_text.Replace(m.Value, "");
             }
         }
+        // change the text that matched to a regex to '#'s , so it won't match to another regex.
         private void mark_as_read(MatchCollection matches) 
-            // change the text that matched to a regex to '#'s , so it won't match to another regex.
+  
         {
             foreach (Match m in matches)
             {
@@ -316,17 +334,12 @@ namespace RetEng
                     doc_text.Replace(m.Value.Trim(), create_nulls(m.Length - 1), m.Index + 1, m.Length - 1);
                 else
                     doc_text.Replace(m.Value, create_nulls(m.Length), m.Index, m.Length);
-
-
-                //doc_text = doc_text.Replace(m.Value, create_nulls(m.Value.Length));
-                /*string before_match = doc_text.Substring(0, m.Index);
-                string after_match = doc_text.Substring(m.Index + m.Length);
-                doc_text = before_match + create_nulls(m.Length) + after_match;*/
             }
         }
 
-        private string create_nulls(int len)
         // return string of '#' to the function mark_as_read
+        private string create_nulls(int len)
+    
         {
             string nulls = "";
             for (int i = 0; i < len; i++)
@@ -334,9 +347,9 @@ namespace RetEng
             return nulls;
         }
 
-
+        // the function convert a complex number format like 234,234,234 or 34 5/7 to double
         private double complex_number_format_to_double (string num)
-            // the function convert a complex number format like 234,234,234 or 34 5/7 to double
+
         {
             string regular_num = @"\d+";
             string non_rational_num = @"\d+\.\d+";
@@ -392,36 +405,10 @@ namespace RetEng
                 return 'b';
 
             return 'n'; // normal
-            /*
-            string regular_num = @"\d+";
-            string non_rational_num = @"\d+\.\d+";
-            string rational_num = @"(\d+\s+)?\d+/\d+";
-            string num_with_commas = @"\d{1,3}(,\d{3})+";
-            string all_num_formats = @"(" + num_with_commas + "|" + rational_num + "|" + non_rational_num + "|" + regular_num + ")";
-
-            Regex rgx_million = new Regex(all_num_formats + @"(\s+million)|m", RegexOptions.IgnoreCase);
-            Regex rgx_billion = new Regex(all_num_formats + @"(\s+billion)|bn", RegexOptions.IgnoreCase);
-            Regex rgx_trillion = new Regex(all_num_formats + @"(\s+trillion)", RegexOptions.IgnoreCase);
-            Regex rgx_hundreds = new Regex(all_num_formats + @"(\s+hundreds)", RegexOptions.IgnoreCase);
-
-            string hun = rgx_hundreds.Match(num).Value;
-            string mil = rgx_million.Match(num).Value;
-            string bil = rgx_billion.Match(num).Value;
-            string tril = rgx_trillion.Match(num).Value;
-            if (hun != null)
-                return 'h';
-            if (mil != null)
-                return 'm';
-            if (bil != null)
-                return 'b';
-            if (tril != null)
-                return 't';
-                
-            return 'n';
-            */
+           
 
         }
-
+       // Parsing unruled words
         private void regular_words_parse_text()
         {
             string x = doc_text.ToString();
@@ -434,14 +421,6 @@ namespace RetEng
                     else
                         add_to_dic(words[i], 5 * i, false);
             }
-            /*
-            string pattern = @"[a-z]+([-'][a-z]+)?";
-            Regex rgx_anyWord = new Regex(pattern, RegexOptions.IgnoreCase);
-            MatchCollection matches = rgx_anyWord.Matches(doc_text.ToString());
-
-            foreach (Match m in matches)
-                add_to_dic(stem.stemTerm(m.Value), m.Index, false);
-            */
             
         }
         private void regular_words_parse_title()
@@ -459,6 +438,7 @@ namespace RetEng
 
 
         }
+       // Parsing numbers by regex
         private void numbers_parse()
         {
             // numbers
@@ -581,24 +561,11 @@ namespace RetEng
             }
 
             doc_text = sb;
-            /*
-            //names
-            string names = @"[A-Z][a-z]+( [A-Z][a-z]+)+";
-
-            Regex rgx_names = new Regex(names);
-            MatchCollection names_matches = rgx_names.Matches(doc_text.ToString());
-            mark_as_read(names_matches);
-
-            foreach (Match m in names_matches)
-            {
-                Name name = new Name(m.Value);
-                add_to_dic(name.ToString(), m.Index, false);
-            }*/
         }
 
 
-
-        public void dates_parse(string text) // parse the dates on the text
+        // parse the dates on the text
+        public void dates_parse(string text) 
         {
 
             //dates

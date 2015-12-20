@@ -4,7 +4,7 @@
 winexe
 C#
 .cs
-C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\x64\Release\
+C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\obj\Release\
 RetEng
 none
 false
@@ -12,9 +12,9 @@ TRACE
 C:\Users\amirf_000\Documents\Visual Studio 2013\Projects\RetEng\retrieval-engine\RetEng\App.xaml
 2-1516374546
 
-20-1916566861
+241345894340
 15558079894
 MainWindow.xaml;show_memory.xaml;
 
-False
+True
 

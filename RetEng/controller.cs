@@ -10,12 +10,12 @@ using Newtonsoft.Json;
 
 namespace RetEng
 {
-    class Controller
+    // Controll the ReadFile , Parser and indexer, by multi thread programming
+   public class Controller
     {
         private ConcurrentQueue<string> batch_files;
         private ConcurrentQueue<Document> docs_to_parse;
         private ConcurrentQueue<Dictionary<string, TermInDoc>> termAfterParse;
-        //private ConcurrentDictionary<string, int> num_of_terms_in_doc;
         private ConcurrentDictionary<string, Tuple<int,int,string>> num_of_terms_in_doc;
         private int num_of_threads_readFile;
         private int num_of_threads_Parser;
@@ -34,20 +34,16 @@ namespace RetEng
 
         private Indexer idxr;
 
-        public Controller(int cache_size, int heap_size, int numOfTermsInPosting,string batch_path,string posting_path,bool stemming)
+        public Controller(int cache_size, int heap_size)
         {
             batch_files = new ConcurrentQueue<string>();
             docs_to_parse = new ConcurrentQueue<Document>();
             termAfterParse = new ConcurrentQueue<Dictionary<string, TermInDoc>>();
-            //num_of_terms_in_doc = new ConcurrentDictionary<string, int>();
             num_of_terms_in_doc = new ConcurrentDictionary<string, Tuple<int, int, string>>();
-
-            idxr = new Indexer(cache_size, heap_size, numOfTermsInPosting,posting_path);
-
+            cacheSize = cache_size;
+            heapSize = heap_size;
             num_of_threads_readFile = 6;
             num_of_threads_Parser = 8;
-            
-
             readFileProcessFinished = false;
             parserProcessFinished = false;
             indexerProcessFinished = false;
@@ -55,28 +51,26 @@ namespace RetEng
             cacheSize = cache_size;
             heapSize = heap_size;
 
-            _batch_path = batch_path;
-            _posting_path = posting_path;
-            _stemming = stemming;
-
         }
-        public void reset_dics()
-        {
-            num_of_terms_in_doc.Clear();
-            batch_files = new ConcurrentQueue<string>();
-            docs_to_parse = new ConcurrentQueue<Document>();
-            termAfterParse = new ConcurrentQueue<Dictionary<string, TermInDoc>>();
-        }
-        
+        // Used for debug and info
         public string data()
         {
             return "#Batch: " + batch_files.Count +"\nDocToParse: " + docs_to_parse.Count + 
                    "\nTermAfterParse: " + termAfterParse.Count;
         }
+       //  a multi setter for few fields
+        public void change_settings(string postig_path, string batch_path, bool stemming)
+        {
+            _posting_path = postig_path;
+            _batch_path = batch_path;
+            _stemming = stemming;
+
+        }
+       // Start the process, and create and manage threads
         public void initiate()
         {
-            // insert the batch files into the "batch_files" queue
-            //foreach (string file in Directory.GetFiles(@"D:\corpus"))
+            int numOfTermsInPosting = 50 * 1000;
+            idxr = new Indexer(cacheSize, heapSize, numOfTermsInPosting, _posting_path);
             foreach (string file in Directory.GetFiles(_batch_path))
                 if (!file.Equals("stop_words.txt"))
                     insertBatch(file);
@@ -111,29 +105,29 @@ namespace RetEng
             Task waitIndexer = Task.Run(() => { waitforindexerProcess(indexer); });
         }
 
-
+       // The readFile Task
         private Task readFileTask()
         {
             return Task.Run(() => { startReadFile(); });
         }
-
+       // The parser Task
         private Task ParserTask()
         {
             return Task.Run(() => { startParser(); });
         }
-
+       // Using the async functions feture 
         private async void readFileAsync()
         {
             await readFileTask();
             readFileProcessFinished = true;
         }
-
+        // Using the async functions feture 
         private async void parserAsync()
         {
             await ParserTask();
             parserProcessFinished = true;
         }
-
+       // Used for debug - write threads info
         private void read_data()
         {
             DateTime d1 = DateTime.Now;
@@ -151,8 +145,8 @@ namespace RetEng
                     if (!t.IsCompleted)
                         parserthreads++;
 
-                //if (!readFileProcessFinished || !parserProcessFinished || !indexerProcessFinished || idxr.cache.Count > 0)
-                //{
+                if (!readFileProcessFinished || !parserProcessFinished || !indexerProcessFinished || idxr.cache.Count > 0)
+                {
                     DateTime d2 = DateTime.Now;
                     TimeSpan d3 = d2.Subtract(d1);
                     string str = d3.ToString() + "\n#Batch: " + batch_files.Count + "\nDocToParse: " + docs_to_parse.Count +
@@ -163,17 +157,16 @@ namespace RetEng
                        "\nqueue Size:" + idxr.queue.Count;
 
                     Console.WriteLine(str);
-                //}
-                /*else
+                }
+                else
                 {
                     break;
-                }*/
-                Thread.Sleep(5000);
+                }
+                Thread.Sleep(9000);
             }
 
         }
-        
-        
+// Start the read file process 
         public void startReadFile()
         {
             string btch;
@@ -190,7 +183,7 @@ namespace RetEng
                 }
             }
         }
-
+// Start the Parser process
         private void startParser()
         {
             Document d;
@@ -208,7 +201,7 @@ namespace RetEng
                 }
             }
         }
-
+       // Gettin the max tf from the parser
         private Tuple<int,int,string> get_max_tf(Dictionary<string, TermInDoc> termDic)
         {
             int max = 0;
@@ -224,7 +217,7 @@ namespace RetEng
             }
             return Tuple.Create<int,int, string>(termDic.Count,max, term); 
         }
-
+       //  Start the indexer process
         private void startindexer(int cache_size, int heap_size)
         {
             
@@ -233,49 +226,34 @@ namespace RetEng
             {
                 if (termAfterParse.TryDequeue(out dicTerm))
                 {
-                    //List<TermInDoc> tempList = dicTerm.Values.ToList();
-                   // num_of_terms_in_doc[tempList[0]._doc_id] = tempList.Count;
                     idxr.insert(dicTerm);
                 }
             }
             // After Indexer finished, save memory and cache
             idxr.writeCache();
-            idxr.save_memory();
             save_numTermsInDoc();
+            idxr.save_memory();
             
-            /*Task[] saveCacheTasks = new Task[6];
-            for (int i = 0; i < 6; i++)
-            {
-                Task saveCache = Task.Run(() => { startSavingCache(); });
-                saveCacheTasks[i] = saveCache;
-            }
-            Console.WriteLine("finished!!!!");*/
         }
-        public void load_memory()
+        public void load_memory(string path)
         {
+            if (idxr == null)
+                idxr = new Indexer(cacheSize, heapSize, 20000, path);
+
             idxr.load_memory();
         }
-        public string show_memory()
+     
+        public void show_memory()
         {
-            return idxr.show_memory();
+            idxr.show_memory();
         }
-
+       // Save docs dataset, each doc and it # terms
         private void save_numTermsInDoc()
         {
             string output = JsonConvert.SerializeObject(num_of_terms_in_doc, Formatting.Indented);
-            System.IO.File.WriteAllText("number_of_terms_in_doc.txt", output);
+            System.IO.File.WriteAllText(_posting_path + "\\number_of_terms_in_doc.txt", output);
         }
 
-        /*private void startSavingCache()
-        {
-            while (idxr.queue.Count > 0)
-            {
-                string key;
-                idxr.queue.TryDequeue(out key);
-                idxr.writeCache(key);
-
-            }
-        }*/
         private void waitforReadFileProcess(Task[] tasks)
         {
             Task.WaitAll(tasks);
