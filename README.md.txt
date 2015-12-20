@@ -16,14 +16,14 @@ First, the text files parsed to terms, and then the engine index it, <br>
 #Text Files Format 
 The engine support multiple text files, each text file can contain multiple Docs. <br>
  Each doc needs to be like the following format:<br>
-/<DOC/><br>
-/<DOCNO/><br>
+\<DOC\><br>
+\<DOCNO\><br>
 Doc ID<br>
-/</DOCNO/><br>
-/<HEADER/><br>
+\</DOCNO\><br>
+\<HEADER\><br>
 headline...<br>
-/</HEADER/><br>
-/<TEXT/><br>
+\</HEADER\><br>
+\<TEXT\><br>
 Document text<br>
-/</TEXT/><br>
-/</DOC/><br>
+\</TEXT\><br>
+\</DOC\><br>
