@@ -24,12 +24,40 @@ namespace RetEng
         Stopwords stopword;
         bool _is_stemming;
 
+        string _query;
+
         public Parser(string stopwords_path,bool stems)
         {
             
             stopword = new Stopwords(stopwords_path);
             stem = new Stemmer();
             _is_stemming = stems;
+        }
+
+        public Parser(string query, string stopwords_path, bool stems)
+        {
+            stopword = new Stopwords(stopwords_path);
+            stem = new Stemmer();
+            _is_stemming = stems;
+            doc_id = "000";
+            batch_id = "000";
+            doc_text = new StringBuilder(query);
+            doc_title = new StringBuilder(" ");
+        }
+        public List<string> parse_query()
+        {
+            StringBuilder temp_sb = new StringBuilder(doc_text.ToString());
+            termDic = new Dictionary<string, TermInDoc>();
+
+            dates_parse(doc_text.ToString());
+            numbers_parse();
+            replace_chars();
+            names_parse();
+            doc_text = temp_sb;
+            remove_stopwords_text();
+            regular_words_parse_text();
+
+            return termDic.Keys.ToList();
         }
 
         public Dictionary<string,TermInDoc> parse_doc (Document doc) 
@@ -54,7 +82,9 @@ namespace RetEng
             return termDic;
 
         }
-       // Replcaing non alpha numeric and un importent characters;
+
+         
+        // Replcaing non alpha numeric and un importent characters;
         private void replace_chars()
         {
             for (int i=0; i< doc_text.Length; i++)
@@ -236,7 +266,7 @@ namespace RetEng
 
         }
         // convert month name to short variable
-        private short month_str_to_short(string month) 
+        public short month_str_to_short(string month) 
         {
             if ((String.Compare(month, "January", StringComparison.OrdinalIgnoreCase) == 0) ||
                 (String.Compare(month, "jan", StringComparison.OrdinalIgnoreCase) == 0))
@@ -300,6 +330,7 @@ namespace RetEng
             else
             {
                 termDic.Add(str, new TermInDoc(doc_id,batch_id));
+                termDic[str]._term = str;
                 termDic[str]._positions.Add(pos);
                 termDic[str]._doc_id = doc_id;
                 termDic[str]._tf++;
@@ -417,9 +448,9 @@ namespace RetEng
             {
                 if (words[i].IndexOf('#') == -1)
                     if (_is_stemming)
-                        add_to_dic(stem.stemTerm(words[i]), 5 * i, false);
+                        add_to_dic(stem.stemTerm(words[i].ToLower()), 5 * i, false);
                     else
-                        add_to_dic(words[i], 5 * i, false);
+                        add_to_dic(words[i].ToLower(), 5 * i, false);
             }
             
         }
@@ -432,9 +463,9 @@ namespace RetEng
 
             foreach (Match m in matches)
                 if (_is_stemming)
-                    add_to_dic(stem.stemTerm(m.Value), m.Index, true);
+                    add_to_dic(stem.stemTerm(m.Value.ToLower()), m.Index, true);
                 else
-                    add_to_dic(m.Value, m.Index, true);
+                    add_to_dic(m.Value.ToLower(), m.Index, true);
 
 
         }
@@ -519,7 +550,7 @@ namespace RetEng
         private void names_parse() // parse the names 
             //checked
         {
-            StringBuilder sb = new StringBuilder();
+            //StringBuilder sb = new StringBuilder();
             StringBuilder temp = new StringBuilder();
             string[] words = doc_text.ToString().Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
             //Array.Sort(words);
@@ -543,16 +574,12 @@ namespace RetEng
                     temp.Append(words[i] + " " );
                     i++;
                     
-                    if (words.Length == i || count == 7)
+                    if (words.Length == i)
                         break;
                 }
                 if (count >= 2 )
                 {
                     add_to_dic(temp.ToString(), i * 5, false);
-                }
-                else if (words.Length > i)
-                {
-                    sb.Append(words[i] + " " );
                 }
 
                 temp.Clear();
@@ -560,7 +587,7 @@ namespace RetEng
 
             }
 
-            doc_text = sb;
+            // doc_text = sb;
         }
 
 

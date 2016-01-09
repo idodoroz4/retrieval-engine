@@ -16,7 +16,8 @@ namespace RetEng
         private ConcurrentQueue<string> batch_files;
         private ConcurrentQueue<Document> docs_to_parse;
         private ConcurrentQueue<Dictionary<string, TermInDoc>> termAfterParse;
-        private ConcurrentDictionary<string, Tuple<int,int,string>> num_of_terms_in_doc;
+        public ConcurrentBag<ConcurrentDictionary<string, ConcurrentBag<Tuple<string, int>>>> tf_all_docs;
+        private ConcurrentDictionary<string, Tuple<int,int,string,int>> num_of_terms_in_doc;
         private int num_of_threads_readFile;
         private int num_of_threads_Parser;
         public bool readFileProcessFinished { get; private set; }
@@ -32,14 +33,15 @@ namespace RetEng
         private Task[] readFileTasks;
         private Task[] parserTasks;
 
-        private Indexer idxr;
+        public Indexer idxr;
 
         public Controller(int cache_size, int heap_size)
         {
             batch_files = new ConcurrentQueue<string>();
             docs_to_parse = new ConcurrentQueue<Document>();
             termAfterParse = new ConcurrentQueue<Dictionary<string, TermInDoc>>();
-            num_of_terms_in_doc = new ConcurrentDictionary<string, Tuple<int, int, string>>();
+            num_of_terms_in_doc = new ConcurrentDictionary<string, Tuple<int, int, string, int>>();
+            tf_all_docs = new ConcurrentBag<ConcurrentDictionary<string, ConcurrentBag<Tuple<string, int>>>>();
             cacheSize = cache_size;
             heapSize = heap_size;
             num_of_threads_readFile = 6;
@@ -187,27 +189,71 @@ namespace RetEng
         private void startParser()
         {
             Document d;
-           Dictionary<string, TermInDoc> TermDic;
+            Dictionary<string, TermInDoc> TermDic;
             Parser prs = new Parser(_batch_path,_stemming);
-
+            ConcurrentDictionary<string, ConcurrentBag<Tuple<string, int>>> tf_doc = new ConcurrentDictionary<string, ConcurrentBag<Tuple<string, int>>>();
             while (!readFileProcessFinished || !docs_to_parse.IsEmpty)
             {
                 if (docs_to_parse.TryDequeue(out d))
-                {  
+                {
+                    int int_date = prs.month_str_to_short(RemoveSpecialCharacters(d.date));
+
                     TermDic = prs.parse_doc(d);
-                    Tuple<int,int,string> t = get_max_tf(TermDic);
-                    num_of_terms_in_doc.TryAdd(d.id, t);
+                    Tuple<int,int,string> t = get_max_tf(TermDic,tf_doc);
+                    if (tf_doc.Count >= 330)
+                    {
+                        tf_all_docs.Add(tf_doc);
+                        tf_doc.Clear();
+                    }
+                    Tuple<int, int, string, int> t2 = new Tuple<int, int, string, int>(t.Item1, t.Item2, t.Item3, int_date);
+                    num_of_terms_in_doc.TryAdd(d.id, t2);
+
                     termAfterParse.Enqueue(TermDic);
                 }
             }
         }
-       // Gettin the max tf from the parser
-        private Tuple<int,int,string> get_max_tf(Dictionary<string, TermInDoc> termDic)
+        public static string RemoveSpecialCharacters(string str)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in str)
+            {
+                if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
+        }
+        private string[] remove_nulls (string[] elems)
+        {
+            string[] new_elems = new string[3];
+            int i = 0;
+            foreach (string cell in elems)
+            {
+                if (cell != "") {
+                    new_elems[i] = cell;
+                    i++;
+                }
+            }
+            return new_elems;
+        }
+        // Gettin the max tf from the parser
+        private Tuple<int,int,string> get_max_tf(Dictionary<string, TermInDoc> termDic, ConcurrentDictionary<string, ConcurrentBag<Tuple<string, int>>> tf_doc)
         {
             int max = 0;
             string term = "";
+            string doc_id = termDic[termDic.Keys.ToList()[0]]._doc_id;
             foreach (var item in termDic)
             {
+                if (tf_doc.ContainsKey(item.Key))
+                    tf_doc[doc_id].Add(new Tuple<string, int>(item.Key, termDic[item.Key]._tf));
+                else
+                {
+                    tf_doc.TryAdd(doc_id, new ConcurrentBag<Tuple<string, int>>());
+                    tf_doc[doc_id].Add(new Tuple<string, int>(item.Key, termDic[item.Key]._tf));
+                }
+
+
                 if (item.Value._tf > max)
                 {
                     max = item.Value._tf;
@@ -232,8 +278,11 @@ namespace RetEng
             // After Indexer finished, save memory and cache
             idxr.writeCache();
             save_numTermsInDoc();
-            idxr.save_memory();
             
+            idxr.save_memory();
+            System.GC.Collect();
+            save_tf_in_docs();
+
         }
         public void load_memory(string path)
         {
@@ -252,6 +301,17 @@ namespace RetEng
         {
             string output = JsonConvert.SerializeObject(num_of_terms_in_doc, Formatting.Indented);
             System.IO.File.WriteAllText(_posting_path + "\\number_of_terms_in_doc.txt", output);
+        }
+
+        private void save_tf_in_docs()
+        {
+            int i = 0;
+            foreach (ConcurrentDictionary<string, ConcurrentBag<Tuple<string, int>>> tf_doc in tf_all_docs)
+            {
+                string output = JsonConvert.SerializeObject(tf_doc, Formatting.Indented);
+                System.IO.File.WriteAllText(_posting_path + "\\tf_in_doc" + i + ".txt", output);
+                i++;
+            }
         }
 
         private void waitforReadFileProcess(Task[] tasks)

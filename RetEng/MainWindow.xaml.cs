@@ -25,11 +25,13 @@ namespace RetEng
     public partial class MainWindow : Window
     {
         Controller ctrl;
+        Searcher srch;
         public MainWindow()
         { // init the controller before the gui statrs
             int cache_size = 100 * 1000;
             int heap_size = 50;
             ctrl = new Controller(cache_size, heap_size);
+            srch = new Searcher();
             InitializeComponent();
             
         }
@@ -121,6 +123,12 @@ namespace RetEng
                 System.Windows.MessageBox.Show("Show Inverted Files faild \n, " + ex);
             }
 
+        }
+
+        private void srch_btn_Click(object sender, RoutedEventArgs e)
+        {
+            
+            srch.start_search(srch_bar.Text, batch_path.Text, stem_cbx.IsChecked.Value, ctrl, posting_path.Text,frm_month.Text,to_month.Text);
         }
     }
 }

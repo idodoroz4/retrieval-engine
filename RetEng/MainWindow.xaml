@@ -5,11 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RetEng"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid Margin="0,0,-0.333,-5.333">
-        <TextBox x:Name="batch_path" HorizontalAlignment="Left" Height="23" Margin="185,53,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="273"/>
+        Title="Search Engine" Height="750
+        " Width="525">
+    <Grid Margin="0,0,3.667,-4.333">
+        <TextBox x:Name="batch_path" HorizontalAlignment="Left" Height="23" Margin="185,53,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="273" Text="D:\corpus"/>
         <Button x:Name="choose_batch_path" Content="choose batch Path" HorizontalAlignment="Left" Margin="37,53,0,0" VerticalAlignment="Top" Width="138" Click="choose_batch_path_Click" Height="23"/>
-        <TextBox x:Name="posting_path" HorizontalAlignment="Left" Height="23" Margin="185,92,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="273"/>
+        <TextBox x:Name="posting_path" HorizontalAlignment="Left" Height="23" Margin="185,92,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="273" Text="C:\Users\tsvika\Desktop\stem"/>
         <Button x:Name="choose_posting_path" Content="choose Posting Path" HorizontalAlignment="Left" Margin="37,92,0,0" VerticalAlignment="Top" Width="138" Height="23" Click="choose_posting_path_Click"/>
         <CheckBox x:Name="stem_cbx" Content="stemming" HorizontalAlignment="Left" Margin="37,137,0,0" VerticalAlignment="Top" IsChecked="True"/>
         <CheckBox x:Name="both_cbx" Content="Stemming + not stemming" HorizontalAlignment="Left" Margin="37,168,0,0" VerticalAlignment="Top"/>
@@ -17,6 +18,50 @@
         <Button x:Name="reset_btn" Content="RESET" HorizontalAlignment="Left" Height="45" Margin="272,264,0,0" VerticalAlignment="Top" Width="119" Click="reset_btn_Click"/>
         <Button x:Name="load_if_btn" Content="load inverted files" HorizontalAlignment="Left" Height="24" Margin="114,198,0,0" VerticalAlignment="Top" Width="119" Click="load_if_btn_Click"/>
         <Button x:Name="show_if_btn" Content="Show Inverted files" HorizontalAlignment="Left" Height="24" Margin="272,198,0,0" VerticalAlignment="Top" Width="119" Click="show_if_btn_Click"/>
+        <TextBox x:Name="srch_bar" HorizontalAlignment="Left" Height="31" Margin="55,383,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="384" Text="Airport Security"/>
+        <Button x:Name="srch_btn" Content="Search" HorizontalAlignment="Left" Margin="185,498,0,0" VerticalAlignment="Top" Width="108" Height="46" Click="srch_btn_Click"/>
+        <Label x:Name="label" Content="Write your query here:" HorizontalAlignment="Left" Margin="56,356,0,0" VerticalAlignment="Top" Width="157" RenderTransformOrigin="0.5,0.5">
+            <Label.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-360.358"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Label.RenderTransform>
+        </Label>
+        <ComboBox x:Name="frm_month" HorizontalAlignment="Left" Margin="80,449,0,0" VerticalAlignment="Top" Width="120">
+            <ComboBoxItem Content="1"/>
+            <ComboBoxItem Content="2"/>
+            <ComboBoxItem Content="3"/>
+            <ComboBoxItem Content="4"/>
+            <ComboBoxItem Content="5"/>
+            <ComboBoxItem Content="6"/>
+            <ComboBoxItem Content="7"/>
+            <ComboBoxItem Content="8"/>
+            <ComboBoxItem Content="9"/>
+            <ComboBoxItem Content="10"/>
+            <ComboBoxItem Content="11"/>
+            <ComboBoxItem Content="12"/>
+            
+        </ComboBox>
+
+        <ComboBox x:Name="to_month" HorizontalAlignment="Left" Margin="271,449,0,0" VerticalAlignment="Top" Width="120">
+            <ComboBoxItem Content="1"/>
+            <ComboBoxItem Content="2"/>
+            <ComboBoxItem Content="3"/>
+            <ComboBoxItem Content="4"/>
+            <ComboBoxItem Content="5"/>
+            <ComboBoxItem Content="6"/>
+            <ComboBoxItem Content="7"/>
+            <ComboBoxItem Content="8"/>
+            <ComboBoxItem Content="9"/>
+            <ComboBoxItem Content="10"/>
+            <ComboBoxItem Content="11"/>
+            <ComboBoxItem Content="12"/>
+        </ComboBox>
+        <Label x:Name="label1" Content="From Month" HorizontalAlignment="Left" Margin="80,423,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.123,-0.103"/>
+        <Label x:Name="label2" Content="To Month" HorizontalAlignment="Left" Margin="272,423,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.07,0.744"/>
 
     </Grid>
 </Window>

@@ -17,7 +17,7 @@ namespace RetEng
     {
         public ConcurrentDictionary<string, ConcurrentBag<TermInDoc>> cache;
         public ConcurrentQueue<string> queue;
-        ConcurrentDictionary<string, Posting> main_dic;
+        public ConcurrentDictionary<string, Posting> main_dic;
         int _cache_size;
         int _heap_size;
         int _numOfTermsInPosting;
@@ -208,8 +208,8 @@ namespace RetEng
         {
             ConcurrentBag<TermInDoc> doc;
             cache.TryRemove("\u0000", out doc);
-           while (cache.Count > 0)
-            write_not_threaded(_numOfTermsInPosting / 90);
+            while (cache.Count > 0)
+            write_not_threaded(_numOfTermsInPosting / 180);
         }
 
 

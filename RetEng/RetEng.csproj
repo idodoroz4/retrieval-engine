@@ -90,7 +90,9 @@
     <Compile Include="Document.cs" />
     <Compile Include="Posting.cs" />
     <Compile Include="Range.cs" />
+    <Compile Include="Ranker.cs" />
     <Compile Include="ReadFile.cs" />
+    <Compile Include="Searcher.cs" />
     <Compile Include="show_memory.xaml.cs">
       <DependentUpon>show_memory.xaml</DependentUpon>
     </Compile>
