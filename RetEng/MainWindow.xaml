@@ -18,8 +18,8 @@
         <Button x:Name="reset_btn" Content="RESET" HorizontalAlignment="Left" Height="45" Margin="272,264,0,0" VerticalAlignment="Top" Width="119" Click="reset_btn_Click"/>
         <Button x:Name="load_if_btn" Content="load inverted files" HorizontalAlignment="Left" Height="24" Margin="114,198,0,0" VerticalAlignment="Top" Width="119" Click="load_if_btn_Click"/>
         <Button x:Name="show_if_btn" Content="Show Inverted files" HorizontalAlignment="Left" Height="24" Margin="272,198,0,0" VerticalAlignment="Top" Width="119" Click="show_if_btn_Click"/>
-        <TextBox x:Name="srch_bar" HorizontalAlignment="Left" Height="31" Margin="55,383,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="384" Text="Airport Security"/>
-        <Button x:Name="srch_btn" Content="Search" HorizontalAlignment="Left" Margin="185,498,0,0" VerticalAlignment="Top" Width="108" Height="46" Click="srch_btn_Click"/>
+        <TextBox x:Name="srch_bar" HorizontalAlignment="Left" Height="31" Margin="55,383,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="319" Text="Space Program"/>
+        <Button x:Name="srch_btn" Content="Search" HorizontalAlignment="Left" Margin="388,383,0,0" VerticalAlignment="Top" Width="108" Height="31" Click="srch_btn_Click"/>
         <Label x:Name="label" Content="Write your query here:" HorizontalAlignment="Left" Margin="56,356,0,0" VerticalAlignment="Top" Width="157" RenderTransformOrigin="0.5,0.5">
             <Label.RenderTransform>
                 <TransformGroup>
@@ -30,7 +30,7 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <ComboBox x:Name="frm_month" HorizontalAlignment="Left" Margin="80,449,0,0" VerticalAlignment="Top" Width="120">
+        <ComboBox x:Name="frm_month" HorizontalAlignment="Left" Margin="55,449,0,0" VerticalAlignment="Top" Width="75">
             <ComboBoxItem Content="1"/>
             <ComboBoxItem Content="2"/>
             <ComboBoxItem Content="3"/>
@@ -46,7 +46,7 @@
             
         </ComboBox>
 
-        <ComboBox x:Name="to_month" HorizontalAlignment="Left" Margin="271,449,0,0" VerticalAlignment="Top" Width="120">
+        <ComboBox x:Name="to_month" HorizontalAlignment="Left" Margin="173,449,0,0" VerticalAlignment="Top" Width="69">
             <ComboBoxItem Content="1"/>
             <ComboBoxItem Content="2"/>
             <ComboBoxItem Content="3"/>
@@ -60,8 +60,9 @@
             <ComboBoxItem Content="11"/>
             <ComboBoxItem Content="12"/>
         </ComboBox>
-        <Label x:Name="label1" Content="From Month" HorizontalAlignment="Left" Margin="80,423,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.123,-0.103"/>
-        <Label x:Name="label2" Content="To Month" HorizontalAlignment="Left" Margin="272,423,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.07,0.744"/>
+        <Label x:Name="label1" Content="From Month" HorizontalAlignment="Left" Margin="55,423,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.123,-0.103"/>
+        <Label x:Name="label2" Content="To Month" HorizontalAlignment="Left" Margin="173,423,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.07,0.744"/>
+        <Button x:Name="file_query_btn" Content="Search By File" HorizontalAlignment="Left" Margin="388,434,0,0" VerticalAlignment="Top" Width="108" Height="28" Click="button_Click"/>
 
     </Grid>
 </Window>

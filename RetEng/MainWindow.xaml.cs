@@ -105,7 +105,7 @@ namespace RetEng
             {
                 ctrl.change_settings(posting_path.Text, batch_path.Text, stem_cbx.IsChecked.Value);
                 ctrl.load_memory(posting_path.Text);
-                srch.load_tf_all_docs();
+                srch.load_tf_all_docs(posting_path.Text);
             }
             catch (Exception ex)
             {
@@ -131,6 +131,17 @@ namespace RetEng
         {
             
             srch.start_search(srch_bar.Text, batch_path.Text, stem_cbx.IsChecked.Value, ctrl, posting_path.Text,frm_month.Text,to_month.Text);
+        }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog fd = new OpenFileDialog();
+            DialogResult result = fd.ShowDialog();
+
+            string file = fd.FileName;
+            srch.start_search_file(file, batch_path.Text, stem_cbx.IsChecked.Value, ctrl, posting_path.Text, frm_month.Text, to_month.Text);
+
+
         }
     }
 }

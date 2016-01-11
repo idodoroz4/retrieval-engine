@@ -21,9 +21,9 @@ namespace RetEng
         }
 
     }
-    class Searcher
+    public class Searcher
     {
-        List<string> terms;
+        public List<string> terms;
         public List<string> Existing_terms;
         public Controller _ctrl;
         public Dictionary<string, List<string>> doctoTerms;
@@ -41,20 +41,23 @@ namespace RetEng
             Existing_terms = new List<string>();
             posting_cache = new Dictionary<string, Dictionary<string, List<TermInDoc>>>();
             num_of_terms_in_doc = null;
-            
+
 
         }
-        public void load_tf_all_docs()
+        public void load_tf_all_docs(string posting_path)
         {
-            tf_all_docs = get_tf_all_docs();
+            tf_all_docs = new Dictionary<string, Dictionary<string, int>>();
+            num_of_terms_in_doc = new Dictionary<string, Tuple<int, int, string, int>>();
+            _posting_path = posting_path;
+            //tf_all_docs = get_tf_all_docs2();
+            get_tf_all_docs2();
         }
         public List<string> start_search(string query, string path_sw, bool stems, Controller ctrl, string posting_path, string FromMonth, string toMonth)
         {
-            if (num_of_terms_in_doc == null)
-                num_of_terms_in_doc = get_number_of_terms_in_doc(posting_path);
             _fromMonth = FromMonth == "" ? (short)1 : short.Parse(FromMonth);
             _toMonth = toMonth == "" ? (short)12 : short.Parse(toMonth);
             
+            // implementing %doll% 
             StringBuilder sb = new StringBuilder();
             if (query[0] == '%' && query[query.Length - 1] == '%'){
                 query = query.Substring(1, query.Length - 2);
@@ -65,9 +68,11 @@ namespace RetEng
                 }
                 query = sb.ToString();
             }
+
+
             Parser prs = new Parser(query, path_sw, stems);
             terms = prs.parse_query();
-            Console.WriteLine();
+          
             _ctrl = ctrl;
             _posting_path = posting_path;
             myTerms.Clear();
@@ -86,7 +91,7 @@ namespace RetEng
                     if (!posting_cache.ContainsKey(path))
                     {
                         tmpdic = new Dictionary<string, List<TermInDoc>>();
-                        tmpdic = read_file(_posting_path + "\\" + path);
+                        tmpdic = read_file2(_posting_path + "\\" + path);
                         posting_cache.Add(path, tmpdic);
                     }
                     else
@@ -113,8 +118,11 @@ namespace RetEng
             }
 
             List<TermInDoc> relevent_docs = get_docs();
+            Ranker r = new Ranker(_ctrl, tf_all_docs, Existing_terms, terms.Count,num_of_terms_in_doc,myTerms);
+            List<string> best_docs = r.rank_relevent_docs(relevent_docs);
+            return best_docs;
             //and_docs();
-            return null;
+            //return null;
         }
         private List<TermInDoc> filter_docs (List<TermInDoc> tid)
         {
@@ -127,7 +135,19 @@ namespace RetEng
             }
             return filtered;
         }
-
+        public void start_search_file (string file_path, string posting_sw, bool stem, Controller ctrl, string posting_path, string to, string from)
+        {
+            var lines = File.ReadLines(file_path);
+            foreach (var line in lines)
+            {
+                string[] split = line.Split('\t');
+                List<string> top_50 = start_search(split[1], posting_sw, stem, ctrl, posting_path, from, to);
+                foreach (string doc in top_50)
+                {
+                    File.AppendAllText(posting_path + "\\qury_res", split[0] + " 0 " + doc + " 1 " + Environment.NewLine);
+                }
+            }
+        }
         private List<TermInDoc> get_docs()
         {
             
@@ -177,6 +197,12 @@ namespace RetEng
             return interDocs;
         }
 
+        private Dictionary<string, List<TermInDoc>> read_file2(string path)
+        {
+            Console.WriteLine(path);
+            string input_json = System.IO.File.ReadAllText(path);
+            return JsonConvert.DeserializeObject<Dictionary<string, List<TermInDoc>>>(input_json);
+        }
         private Dictionary<string, List<TermInDoc>> read_file (string path)
         {
             Dictionary<string, List<TermInDoc>> tmpdic;
@@ -208,10 +234,17 @@ namespace RetEng
 
             return tmpdic;
         }
-
-        private Dictionary<string, Dictionary<string, int>> get_tf_all_docs()
+        private void get_tf_all_docs2()
         {
-            Dictionary<string, Dictionary<string, int>> tmpdic = new Dictionary<string, Dictionary<string, int>>();
+            string input_json = System.IO.File.ReadAllText(_posting_path + "\\tf_all_docs.txt");
+            tf_all_docs = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, int>>>(input_json);
+
+            string input_json2 = System.IO.File.ReadAllText(_posting_path + "\\number_of_terms_in_doc.txt");
+            num_of_terms_in_doc = JsonConvert.DeserializeObject<Dictionary<string, Tuple<int, int, string, int>>>(input_json2);
+        }
+        private void get_tf_all_docs()
+        {
+            //Dictionary<string, Dictionary<string, int>> tmpdic = new Dictionary<string, Dictionary<string, int>>();
             FileStream fs = File.Open(_posting_path + "\\tf_all_docs.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             BufferedStream bs = new BufferedStream(fs);
             StreamReader sr = new StreamReader(bs);
@@ -219,10 +252,11 @@ namespace RetEng
             using (JsonReader reader = new JsonTextReader(sr))
             {
                 JsonSerializer ser = new JsonSerializer();
-                tmpdic = ser.Deserialize<Dictionary<string, Dictionary<string, int>>>(reader);
+                tf_all_docs = ser.Deserialize<Dictionary<string, Dictionary<string, int>>>(reader);
+                //tmpdic = ser.Deserialize<Dictionary<string, Dictionary<string, int>>>(reader);
             }
 
-            return tmpdic;
+            //return tmpdic;
         }
 
         /*private void load_tf_in_doc()
