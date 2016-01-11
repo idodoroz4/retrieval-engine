@@ -31,9 +31,10 @@ namespace RetEng
             int cache_size = 100 * 1000;
             int heap_size = 50;
             ctrl = new Controller(cache_size, heap_size);
-            srch = new Searcher();
-            InitializeComponent();
             
+            InitializeComponent();
+            srch = new Searcher();
+
         }
         // delete all text file in directory path
         private void delete_all_textFiles()
@@ -104,6 +105,7 @@ namespace RetEng
             {
                 ctrl.change_settings(posting_path.Text, batch_path.Text, stem_cbx.IsChecked.Value);
                 ctrl.load_memory(posting_path.Text);
+                srch.load_tf_all_docs();
             }
             catch (Exception ex)
             {

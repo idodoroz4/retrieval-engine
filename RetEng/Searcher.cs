@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.IO;
+using System.Collections.Concurrent;
 
 namespace RetEng
 {
@@ -29,6 +30,7 @@ namespace RetEng
         Dictionary<string, List<TermInDoc>> myTerms;
         Dictionary<string, Dictionary<string, List<TermInDoc>>> posting_cache;
         public Dictionary<string, Tuple<int, int, string, int>> num_of_terms_in_doc;
+        public Dictionary<string, Dictionary<string, int>> tf_all_docs;
         string _posting_path;
         short _fromMonth;
         short _toMonth;
@@ -39,7 +41,12 @@ namespace RetEng
             Existing_terms = new List<string>();
             posting_cache = new Dictionary<string, Dictionary<string, List<TermInDoc>>>();
             num_of_terms_in_doc = null;
+            
 
+        }
+        public void load_tf_all_docs()
+        {
+            tf_all_docs = get_tf_all_docs();
         }
         public List<string> start_search(string query, string path_sw, bool stems, Controller ctrl, string posting_path, string FromMonth, string toMonth)
         {
@@ -170,9 +177,6 @@ namespace RetEng
             return interDocs;
         }
 
-
-
-
         private Dictionary<string, List<TermInDoc>> read_file (string path)
         {
             Dictionary<string, List<TermInDoc>> tmpdic;
@@ -204,5 +208,36 @@ namespace RetEng
 
             return tmpdic;
         }
+
+        private Dictionary<string, Dictionary<string, int>> get_tf_all_docs()
+        {
+            Dictionary<string, Dictionary<string, int>> tmpdic = new Dictionary<string, Dictionary<string, int>>();
+            FileStream fs = File.Open(_posting_path + "\\tf_all_docs.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            BufferedStream bs = new BufferedStream(fs);
+            StreamReader sr = new StreamReader(bs);
+            //StringBuilder sb = new StringBuilder();
+            using (JsonReader reader = new JsonTextReader(sr))
+            {
+                JsonSerializer ser = new JsonSerializer();
+                tmpdic = ser.Deserialize<Dictionary<string, Dictionary<string, int>>>(reader);
+            }
+
+            return tmpdic;
+        }
+
+        /*private void load_tf_in_doc()
+        {
+            string[] fileEntries = Directory.GetFiles(_posting_path);
+            foreach (string fileName in fileEntries)
+            {
+                if (fileName.Contains("tf"))
+                {
+                    string input_json = System.IO.File.ReadAllText(_posting_path + "\\" + fileName);
+                    main_dic = JsonConvert.DeserializeObject<ConcurrentDictionary<string, Posting>>(input_json);
+                }
+            }
+
+               
+        }*/
     }
 }

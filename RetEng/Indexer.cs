@@ -62,7 +62,7 @@ namespace RetEng
         // save inverted file to disk
         public void save_memory()
         {
-            string output = JsonConvert.SerializeObject(main_dic, Formatting.Indented);
+            string output = JsonConvert.SerializeObject(main_dic);
             System.IO.File.WriteAllText(_posting_path + "\\Inverted_file.txt", output);
         }
 
@@ -147,7 +147,7 @@ namespace RetEng
                 main_dic[removal_key].posting_locations.Add("p" + _file_number + ".txt"); //must be with locks if threaded
 
             }
-            string output = JsonConvert.SerializeObject(tempDic, Formatting.Indented);
+            string output = JsonConvert.SerializeObject(tempDic);
             //System.IO.File.WriteAllText("posting" + _file_number + ".txt", output);
             write_async(output,_file_number);
            _file_number++;
@@ -174,7 +174,7 @@ namespace RetEng
                 main_dic[removal_key].posting_locations.Add("p" + _file_number + ".txt"); //must be with locks if threaded
 
             }
-            string output = JsonConvert.SerializeObject(tempDic, Formatting.Indented);
+            string output = JsonConvert.SerializeObject(tempDic);
             //System.IO.File.WriteAllText("posting" + _file_number + ".txt", output);
             System.IO.File.WriteAllText(_posting_path + "\\p" + _file_number + ".txt", output);
             _file_number++;
@@ -197,7 +197,7 @@ namespace RetEng
         {
             var sortedDict = (from entry in main_dic orderby entry.Key ascending select entry)
             .ToDictionary(pair => pair.Key, pair => pair.Value);
-           string sorted_inveted = JsonConvert.SerializeObject(sortedDict, Formatting.Indented);
+           string sorted_inveted = JsonConvert.SerializeObject(sortedDict);
            File.WriteAllText("sorted_inveted.txt", sorted_inveted);
             Process.Start("sorted_inveted.txt");
         }
@@ -209,7 +209,7 @@ namespace RetEng
             ConcurrentBag<TermInDoc> doc;
             cache.TryRemove("\u0000", out doc);
             while (cache.Count > 0)
-            write_not_threaded(_numOfTermsInPosting / 180);
+            write_not_threaded(_numOfTermsInPosting / 100);
         }
 
 

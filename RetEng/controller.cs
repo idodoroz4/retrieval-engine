@@ -16,7 +16,7 @@ namespace RetEng
         private ConcurrentQueue<string> batch_files;
         private ConcurrentQueue<Document> docs_to_parse;
         private ConcurrentQueue<Dictionary<string, TermInDoc>> termAfterParse;
-        public ConcurrentBag<ConcurrentDictionary<string, ConcurrentBag<Tuple<string, int>>>> tf_all_docs;
+        public ConcurrentDictionary<string, ConcurrentDictionary<string, int>> tf_all_docs;
         private ConcurrentDictionary<string, Tuple<int,int,string,int>> num_of_terms_in_doc;
         private int num_of_threads_readFile;
         private int num_of_threads_Parser;
@@ -41,7 +41,7 @@ namespace RetEng
             docs_to_parse = new ConcurrentQueue<Document>();
             termAfterParse = new ConcurrentQueue<Dictionary<string, TermInDoc>>();
             num_of_terms_in_doc = new ConcurrentDictionary<string, Tuple<int, int, string, int>>();
-            tf_all_docs = new ConcurrentBag<ConcurrentDictionary<string, ConcurrentBag<Tuple<string, int>>>>();
+            tf_all_docs = new ConcurrentDictionary<string, ConcurrentDictionary<string, int>>();
             cacheSize = cache_size;
             heapSize = heap_size;
             num_of_threads_readFile = 6;
@@ -199,12 +199,7 @@ namespace RetEng
                     int int_date = prs.month_str_to_short(RemoveSpecialCharacters(d.date));
 
                     TermDic = prs.parse_doc(d);
-                    Tuple<int,int,string> t = get_max_tf(TermDic,tf_doc);
-                    if (tf_doc.Count >= 330)
-                    {
-                        tf_all_docs.Add(tf_doc);
-                        tf_doc.Clear();
-                    }
+                    Tuple<int,int,string> t = get_max_tf(TermDic);
                     Tuple<int, int, string, int> t2 = new Tuple<int, int, string, int>(t.Item1, t.Item2, t.Item3, int_date);
                     num_of_terms_in_doc.TryAdd(d.id, t2);
 
@@ -238,19 +233,21 @@ namespace RetEng
             return new_elems;
         }
         // Gettin the max tf from the parser
-        private Tuple<int,int,string> get_max_tf(Dictionary<string, TermInDoc> termDic, ConcurrentDictionary<string, ConcurrentBag<Tuple<string, int>>> tf_doc)
+        private Tuple<int,int,string> get_max_tf(Dictionary<string, TermInDoc> termDic)
         {
             int max = 0;
             string term = "";
             string doc_id = termDic[termDic.Keys.ToList()[0]]._doc_id;
             foreach (var item in termDic)
             {
-                if (tf_doc.ContainsKey(item.Key))
-                    tf_doc[doc_id].Add(new Tuple<string, int>(item.Key, termDic[item.Key]._tf));
+                if (tf_all_docs.ContainsKey(doc_id))
+                    tf_all_docs[doc_id].TryAdd(item.Key, termDic[item.Key]._tf);
+                
                 else
                 {
-                    tf_doc.TryAdd(doc_id, new ConcurrentBag<Tuple<string, int>>());
-                    tf_doc[doc_id].Add(new Tuple<string, int>(item.Key, termDic[item.Key]._tf));
+                    tf_all_docs.TryAdd(doc_id, new ConcurrentDictionary<string, int>());
+                    tf_all_docs[doc_id].TryAdd(item.Key, termDic[item.Key]._tf);
+                    
                 }
 
 
@@ -280,8 +277,8 @@ namespace RetEng
             save_numTermsInDoc();
             
             idxr.save_memory();
-            System.GC.Collect();
-            save_tf_in_docs();
+
+            write_tfs();
 
         }
         public void load_memory(string path)
@@ -299,19 +296,8 @@ namespace RetEng
        // Save docs dataset, each doc and it # terms
         private void save_numTermsInDoc()
         {
-            string output = JsonConvert.SerializeObject(num_of_terms_in_doc, Formatting.Indented);
+            string output = JsonConvert.SerializeObject(num_of_terms_in_doc);
             System.IO.File.WriteAllText(_posting_path + "\\number_of_terms_in_doc.txt", output);
-        }
-
-        private void save_tf_in_docs()
-        {
-            int i = 0;
-            foreach (ConcurrentDictionary<string, ConcurrentBag<Tuple<string, int>>> tf_doc in tf_all_docs)
-            {
-                string output = JsonConvert.SerializeObject(tf_doc, Formatting.Indented);
-                System.IO.File.WriteAllText(_posting_path + "\\tf_in_doc" + i + ".txt", output);
-                i++;
-            }
         }
 
         private void waitforReadFileProcess(Task[] tasks)
@@ -365,6 +351,22 @@ namespace RetEng
             Dictionary<string, TermInDoc> dic;
             termAfterParse.TryDequeue(out dic);
             return dic;
+        }
+
+        private void write_tfs()
+        {
+            
+            FileStream fs = File.Open(_posting_path + "\\tf_all_docs.txt", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            BufferedStream bs = new BufferedStream(fs);
+            StreamWriter sr = new StreamWriter(bs);
+            //StringBuilder sb = new StringBuilder();
+            using (JsonWriter writer = new JsonTextWriter(sr))
+            {
+                JsonSerializer ser = new JsonSerializer();
+                ser.Serialize(writer, tf_all_docs);
+            }
+
+
         }
 
     }
